@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "server": "node server.js",
+    "webhook": "smee --url https://smee.io/nleha6TjtWHswsD7 --target http://localhost:3000/webhook/github",
+    "dashboard": "npm run dev --prefix dashboard/client",
+    "dev": "concurrently -n SERVER,WEBHOOK,DASHBOARD -c blue,yellow,green \"npm:server\" \"npm:webhook\" \"npm:dashboard\"",
+    "db:migrate": "node database/migrate.js",
+    "test": "node tests/test-db.js"
   },
   "keywords": [],
   "author": "",
@@ -13,9 +18,11 @@
     "@google/genai": "^2.18.0",
     "axios": "^1.19.0",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "mysql2": "^3.11.5"
   },
   "devDependencies": {
+    "concurrently": "^9.1.2",
     "smee-client": "^3.1.1"
   }
 }
