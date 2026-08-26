@@ -1,6 +1,5 @@
 const axios = require('axios');
 
-// Posts a comment on a GitHub PR
 async function postComment(owner, repo, pullNumber, commentBody) {
   const url = `https://api.github.com/repos/${owner}/${repo}/issues/${pullNumber}/comments`;
 
