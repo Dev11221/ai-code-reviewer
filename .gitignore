@@ -1,3 +1,4 @@
 node_modules
 .env
 test-gemini.js
+test.py

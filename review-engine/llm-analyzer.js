@@ -1,33 +1,51 @@
 const { GoogleGenAI } = require('@google/genai');
+const { withRetry } = require('../utils/retry');
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// This function sends a code diff to Gemini and asks it to review it
-async function analyzeDiff(diff) {
+async function analyzeDiff(diff, staticFindings = []) {
   const prompt = `
-You are an expert code reviewer. Review the following git diff and identify:
-1. Bugs or logic errors
-2. Security vulnerabilities or loopholes
-3. Code quality issues (naming, structure, readability)
+You are a senior developer explaining code review findings to a teammate. A static analysis tool has already identified the following technical issues in this code. Your job is to review the surrounding code changes and provide additional context: readability, logic, and best-practice observations that a static tool might miss. Do not restate the security findings below - they're already known. Focus on other code quality aspects (naming, structure, edge cases, error handling).
 
-For each issue found, respond in this exact format:
-- File: <filename>
-- Severity: <blocking | warning | nitpick>
-- Issue: <short description>
-- Suggestion: <how to fix it>
+Known static analysis findings (for context only, do not repeat these):
+${JSON.stringify(staticFindings, null, 2)}
 
-If no issues are found, respond with: "No issues found."
+Respond ONLY with a valid JSON array using this structure:
+[
+  {
+    "filePath": "string",
+    "severity": "blocking" | "warning" | "nitpick",
+    "category": "maintainability" | "readability" | "performance",
+    "issue": "string",
+    "suggestion": "string"
+  }
+]
+
+If nothing additional is found, respond with exactly: []
 
 Here is the diff:
 ${diff}
 `;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-3.6-flash',
-    contents: prompt,
-  });
+  const response = await withRetry(() =>
+    ai.models.generateContent({
+      model: 'gemini-3.6-flash',
+      contents: prompt,
+    })
+  );
 
-  return response.text;
+  let text = response.text.trim();
+
+  if (text.startsWith('```')) {
+    text = text.replace(/^```(json)?\n?/, '').replace(/```$/, '').trim();
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    console.error('Failed to parse Gemini response as JSON:', text);
+    return [];
+  }
 }
 
 module.exports = { analyzeDiff };
