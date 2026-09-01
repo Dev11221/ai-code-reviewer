@@ -2,6 +2,7 @@ const { execFile } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const crypto = require('crypto');
 
 function runSemgrep(filePath) {
   return new Promise((resolve) => {
@@ -17,24 +18,15 @@ function runSemgrep(filePath) {
         try {
           const parsed = JSON.parse(stdout);
           const findings = (parsed.results || []).map((r) => {
-            // The message itself usually contains both the explanation AND the fix advice
-            // (e.g. "...Instead, use a parameterized query...") - use it fully as the issue text
             const fullMessage = r.extra.message || 'Issue detected by static analysis.';
-
-            // If Semgrep provides an actual autofix snippet, surface that as the suggestion
             const autofix = r.extra.fix;
-
-            // Otherwise fall back to a reference link to the rule's documentation
             const ruleLink = r.extra.metadata?.source || `https://semgrep.dev/r/${r.check_id}`;
-
             return {
               filePath: r.path,
               severity: r.extra.severity === 'ERROR' ? 'blocking' : 'warning',
               category: 'security',
               issue: fullMessage,
-              suggestion: autofix
-                ? `Suggested fix: ${autofix}`
-                : `Learn more: ${ruleLink}`,
+              suggestion: autofix ? `Suggested fix: ${autofix}` : `Learn more: ${ruleLink}`,
             };
           });
           resolve(findings);
@@ -72,27 +64,29 @@ function splitDiffByFile(diff) {
   return fileBlocks;
 }
 
+async function analyzeFile(fileName, addedLines) {
+  if (!addedLines.trim()) return [];
+
+  const ext = path.extname(fileName) || '.txt';
+  const tempFilePath = path.join(os.tmpdir(), `semgrep-check-${Date.now()}-${crypto.randomUUID()}${ext}`);
+  fs.writeFileSync(tempFilePath, addedLines);
+
+  try {
+    const findings = await runSemgrep(tempFilePath);
+    return findings.map((f) => ({ ...f, filePath: fileName }));
+  } finally {
+    fs.unlinkSync(tempFilePath);
+  }
+}
+
 async function runStaticAnalysis(diff) {
   const fileBlocks = splitDiffByFile(diff);
-  let allFindings = [];
 
-  for (const { fileName, addedLines } of fileBlocks) {
-    if (!addedLines.trim()) continue;
+  const resultsPerFile = await Promise.all(
+    fileBlocks.map(({ fileName, addedLines }) => analyzeFile(fileName, addedLines))
+  );
 
-    const ext = path.extname(fileName) || '.txt';
-    const tempFilePath = path.join(os.tmpdir(), `semgrep-check-${Date.now()}${ext}`);
-    fs.writeFileSync(tempFilePath, addedLines);
-
-    try {
-      const findings = await runSemgrep(tempFilePath);
-      const relabeled = findings.map((f) => ({ ...f, filePath: fileName }));
-      allFindings = allFindings.concat(relabeled);
-    } finally {
-      fs.unlinkSync(tempFilePath);
-    }
-  }
-
-  return allFindings;
+  return resultsPerFile.flat();
 }
 
 module.exports = { runStaticAnalysis };
