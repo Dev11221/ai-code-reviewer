@@ -3,3 +3,4 @@ node_modules
 test-gemini.js
 dashboard/client/dist
 dashboard/client/node_modules
+test.py
