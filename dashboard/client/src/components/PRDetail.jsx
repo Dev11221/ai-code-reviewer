@@ -1,19 +1,15 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Trash2, ExternalLink, Code2, ListChecks } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Code2, ListChecks } from 'lucide-react';
 import api from '../api.js';
 import DiffViewer from './DiffViewer.jsx';
 
 // Fetches GET /api/reviews/:id/findings, which returns { review, findings }.
-// Shows each finding (file, severity, issue, suggestion), the stored diff,
-// and lets you delete the review.
-export default function PRDetail({ reviewId, onBack, onDeleted }) {
+export default function PRDetail({ reviewId, onBack }) {
   const [review, setReview] = useState(null);
   const [findings, setFindings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState('findings');
-  const [deleting, setDeleting] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -38,17 +34,6 @@ export default function PRDetail({ reviewId, onBack, onDeleted }) {
       ? `https://github.com/${review.repo_owner}/${review.repo_name}/pull/${review.pr_number}`
       : null;
 
-  const handleDelete = async () => {
-    setDeleting(true);
-    try {
-      await api.deleteReview(reviewId);
-      onDeleted?.();
-    } catch (err) {
-      setError(err.message);
-      setDeleting(false);
-    }
-  };
-
   return (
     <div className="pr-detail">
       <button className="back-link" onClick={onBack}>
@@ -64,8 +49,11 @@ export default function PRDetail({ reviewId, onBack, onDeleted }) {
             <div>
               <h2>{title}</h2>
               <div className="meta">
-                {new Date(review.created_at).toLocaleString()} · {findings.length} finding
+                {new Date(review.created_at).toLocaleDateString()} · {findings.length} finding
                 {findings.length === 1 ? '' : 's'}
+                {review.overall_score !== null && review.overall_score !== undefined && (
+                  <> · Score {review.overall_score}</>
+                )}
               </div>
             </div>
             <div className="detail-actions">
@@ -73,20 +61,6 @@ export default function PRDetail({ reviewId, onBack, onDeleted }) {
                 <a className="btn-ghost-sm" href={githubUrl} target="_blank" rel="noreferrer">
                   <ExternalLink size={14} /> View on GitHub
                 </a>
-              )}
-              {confirmDelete ? (
-                <span className="confirm-delete">
-                  <button className="btn-danger-sm" onClick={handleDelete} disabled={deleting}>
-                    {deleting ? 'Deleting…' : 'Confirm delete'}
-                  </button>
-                  <button className="btn-ghost-sm" onClick={() => setConfirmDelete(false)}>
-                    Cancel
-                  </button>
-                </span>
-              ) : (
-                <button className="btn-danger-sm" onClick={() => setConfirmDelete(true)}>
-                  <Trash2 size={14} /> Delete review
-                </button>
               )}
             </div>
           </div>

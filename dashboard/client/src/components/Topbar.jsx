@@ -1,10 +1,10 @@
-import { Github, Sun, Moon, Menu, CircleDot } from 'lucide-react';
+import { Github, Sun, Moon, Menu, CircleDot, AlertCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { useGithub } from '../context/GithubContext.jsx';
 
 export default function Topbar({ onToggleSidebar, live, onNavigate }) {
   const { theme, toggleTheme } = useTheme();
-  const { loading, connected, login, avatarUrl, reason, toggleConnection } = useGithub();
+  const { loading, connected, login, reason } = useGithub();
 
   return (
     <header className="topbar">
@@ -28,25 +28,19 @@ export default function Topbar({ onToggleSidebar, live, onNavigate }) {
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
 
-        <button
+        <div
           className={`github-btn ${connected ? 'is-connected' : ''}`}
-          onClick={toggleConnection}
-          disabled={loading}
           title={
             loading
-              ? 'Checking GitHub connection…'
+              ? 'Checking GITHUB_TOKEN…'
               : connected
-              ? `Connected as ${login} — click to disconnect this session`
-              : reason || 'Click to connect'
+              ? `Using GITHUB_TOKEN as ${login}`
+              : reason || 'GITHUB_TOKEN is not set in .env'
           }
         >
-          {connected && avatarUrl ? (
-            <img className="github-avatar" src={avatarUrl} alt="" />
-          ) : (
-            <Github size={16} />
-          )}
-          <span>{loading ? 'Checking…' : connected ? `Connected · ${login}` : 'Connect GitHub'}</span>
-        </button>
+          {connected ? <Github size={16} /> : <AlertCircle size={16} />}
+          <span>{loading ? 'Checking…' : connected ? login : 'No GitHub token'}</span>
+        </div>
       </div>
     </header>
   );

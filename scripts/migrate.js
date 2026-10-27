@@ -1,6 +1,3 @@
-// Runs every .sql file in database/migrations, in order, against DATABASE_URL.
-// Safe to re-run: migration files use IF NOT EXISTS / IF EXISTS guards.
-// Usage: npm run migrate
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');

@@ -1,30 +1,25 @@
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
+const { resolveGithubAuth } = require('../../lib/session');
 
-// This app authenticates to GitHub with the personal access token already
-// sitting in .env (GITHUB_TOKEN) — the dashboard never asks the user to type
-// or paste a token. These two routes just let the frontend check whether
-// that token is valid and list the repos it can see.
-
-function githubClient() {
+function githubClient(token) {
   return axios.create({
     baseURL: 'https://api.github.com',
     headers: {
-      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
     },
   });
 }
 
-// GET /api/github/status -> whether GITHUB_TOKEN is present & valid, plus
-// the authenticated user's profile (used for the Connect/Connected button).
 router.get('/github/status', async (req, res) => {
-  if (!process.env.GITHUB_TOKEN) {
+  const auth = resolveGithubAuth();
+  if (!auth) {
     return res.json({ connected: false, reason: 'GITHUB_TOKEN is not set in .env' });
   }
   try {
-    const { data } = await githubClient().get('/user');
+    const { data } = await githubClient(auth.token).get('/user');
     res.json({
       connected: true,
       login: data.login,
@@ -40,13 +35,13 @@ router.get('/github/status', async (req, res) => {
   }
 });
 
-// GET /api/github/repos -> repos visible to the token, newest-updated first.
 router.get('/github/repos', async (req, res) => {
-  if (!process.env.GITHUB_TOKEN) {
-    return res.status(400).json({ error: 'GITHUB_TOKEN is not set in .env' });
+  const auth = resolveGithubAuth();
+  if (!auth) {
+    return res.status(401).json({ error: 'GITHUB_TOKEN is not set in .env' });
   }
   try {
-    const { data } = await githubClient().get('/user/repos', {
+    const { data } = await githubClient(auth.token).get('/user/repos', {
       params: { sort: 'updated', per_page: 100, affiliation: 'owner,collaborator,organization_member' },
     });
     const repos = data.map((r) => ({

@@ -38,7 +38,7 @@ export default function TrendsChart() {
   }, [version]);
 
   return (
-    <div className="panel chart-panel">
+    <div className="panel chart-panel" id="findings-chart">
       <div className="panel-header">
         <h3>Findings by severity</h3>
         <span className="panel-header-hint">updates live</span>

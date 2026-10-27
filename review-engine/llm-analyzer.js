@@ -31,6 +31,12 @@ ${diff}
     ai.models.generateContent({
       model: 'gemini-3.6-flash',
       contents: prompt,
+      config: {
+        httpOptions: {
+          timeout: 60000, // fail fast instead of hanging if Gemini is slow/unresponsive
+          maxRetries: 0, // withRetry() already handles retries at a higher level
+        },
+      },
     })
   );
 

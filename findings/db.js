@@ -10,11 +10,12 @@ async function createReview({
   fileName,
   overallScore = null,
   diffText = null,
+  sourceCode = null,
 }) {
   const result = await pool.query(
-    `INSERT INTO reviews (source_type, repo_owner, repo_name, pr_number, file_name, overall_score, diff_text)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-    [sourceType, repoOwner, repoName, prNumber, fileName, overallScore, diffText]
+    `INSERT INTO reviews (source_type, repo_owner, repo_name, pr_number, file_name, overall_score, diff_text, source_code)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+    [sourceType, repoOwner, repoName, prNumber, fileName, overallScore, diffText, sourceCode]
   );
   return result.rows[0].id;
 }

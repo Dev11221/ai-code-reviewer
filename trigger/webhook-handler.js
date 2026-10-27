@@ -3,9 +3,10 @@ const router = express.Router();
 const { fetchDiff } = require('../fetch-prepare/diff-fetcher');
 const { analyzeDiff } = require('../review-engine/llm-analyzer');
 const { runStaticAnalysis } = require('../review-engine/static-analyzer');
-const { mergeFindings } = require('../review-engine/merge-findings');
+const { mergeFindings, computeOverallScore } = require('../review-engine/merge-findings');
 const { postComment } = require('../delivery/github-comments');
 const { createReview, saveFinding } = require('../findings/db');
+const { reviewEvents } = require('../lib/events');
 
 router.post('/github', (req, res) => {
   const event = req.body;
@@ -58,8 +59,34 @@ async function processReview(event) {
   }
 
   const review = mergeFindings(staticFindings, llmFindings);
+  const overallScore = computeOverallScore(review);
   console.log('--- COMBINED REVIEW ---');
   console.log(review);
+
+  let reviewId;
+  try {
+    console.log('Saving review to database...');
+    const t3 = Date.now();
+    reviewId = await createReview({
+      sourceType: 'github_pr',
+      repoOwner: owner,
+      repoName: repo,
+      prNumber: pullNumber,
+      diffText: diff,
+      overallScore,
+    });
+
+    for (const finding of review) {
+      await saveFinding(reviewId, finding);
+    }
+    console.log(`--- SAVED REVIEW #${reviewId} WITH ${review.length} FINDING(S) (${((Date.now() - t3) / 1000).toFixed(1)}s) ---`);
+
+    // Tell any connected dashboards a new review exists so tables/charts
+    // refresh live, without the user hitting reload.
+    reviewEvents.emit('change', { type: 'review-created', reviewId });
+  } catch (err) {
+    console.error('FAILED at saving review/findings to DB:', err.message);
+  }
 
   try {
     console.log('Saving review to database...');

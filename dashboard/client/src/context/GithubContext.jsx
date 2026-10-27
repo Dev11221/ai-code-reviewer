@@ -3,21 +3,14 @@ import api from '../api.js';
 
 const GithubContext = createContext(null);
 
-// NOTE on "connect / disconnect": this app authenticates to GitHub with the
-// GITHUB_TOKEN already sitting in your .env — there's no OAuth flow and the
-// dashboard never asks you to paste a token. "Connected" here means "the
-// server's token is present and valid". Clicking the button when connected
-// does a *local* disconnect: it hides the repo list / status in this browser
-// tab (stored in localStorage) without touching your .env token, since the
-// server has no safe way to revoke or forget a token you set yourself. Click
-// it again to reconnect instantly — no re-auth needed, the token never left.
+// GitHub access is a single static GITHUB_TOKEN in .env — no per-user login.
+// Reviews are triggered by pointing a repo's webhook (in GitHub's own repo
+// settings) at SMEE_URL; this context just reports whether the token works
+// and lists the repos it can see, for browsing/filtering in the dashboard.
 export function GithubProvider({ children }) {
   const [status, setStatus] = useState({ loading: true, connected: false });
   const [repos, setRepos] = useState([]);
   const [reposLoading, setReposLoading] = useState(false);
-  const [locallyDisconnected, setLocallyDisconnected] = useState(
-    () => localStorage.getItem('acr-github-disconnected') === '1'
-  );
 
   const refreshStatus = useCallback(() => {
     setStatus((s) => ({ ...s, loading: true }));
@@ -31,10 +24,8 @@ export function GithubProvider({ children }) {
     refreshStatus();
   }, [refreshStatus]);
 
-  const connected = status.connected && !locallyDisconnected;
-
   useEffect(() => {
-    if (!connected) {
+    if (!status.connected) {
       setRepos([]);
       return;
     }
@@ -44,19 +35,16 @@ export function GithubProvider({ children }) {
       .then(setRepos)
       .catch(() => setRepos([]))
       .finally(() => setReposLoading(false));
-  }, [connected]);
-
-  const toggleConnection = () => {
-    setLocallyDisconnected((prev) => {
-      const next = !prev;
-      localStorage.setItem('acr-github-disconnected', next ? '1' : '0');
-      return next;
-    });
-  };
+  }, [status.connected]);
 
   return (
     <GithubContext.Provider
-      value={{ ...status, connected, repos, reposLoading, toggleConnection, refreshStatus }}
+      value={{
+        ...status,
+        repos,
+        reposLoading,
+        refreshStatus,
+      }}
     >
       {children}
     </GithubContext.Provider>

@@ -4,6 +4,7 @@ import Topbar from './components/Topbar.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import PRDetail from './components/PRDetail.jsx';
 import TablesPage from './components/TablesPage.jsx';
+import QuickReview from './components/QuickReview.jsx';
 import { useRoute } from './utils/router.js';
 import { useLive } from './context/LiveContext.jsx';
 
@@ -17,8 +18,8 @@ export default function App() {
   const { live } = useLive();
   const [collapsed, setCollapsed] = useState(() => window.innerWidth < 900);
   const [activeRepo, setActiveRepo] = useState(null);
+  const [pendingScroll, setPendingScroll] = useState(null);
 
-  // Close the mobile sidebar automatically after navigating.
   useEffect(() => {
     if (window.innerWidth < 900) setCollapsed(true);
   }, [path]);
@@ -28,6 +29,11 @@ export default function App() {
 
   const openReview = (id) => go(`/reviews/${id}`);
   const closeReview = () => go('/');
+
+  const goToChart = () => {
+    setPendingScroll('chart');
+    if (path !== '/') go('/');
+  };
 
   return (
     <div className="app-shell">
@@ -43,18 +49,19 @@ export default function App() {
             setActiveRepo(repo);
             if (path !== '/') go('/');
           }}
+          onGoToChart={goToChart}
         />
         <main className="app-main">
-          {reviewId && (
-            <PRDetail reviewId={reviewId} onBack={closeReview} onDeleted={closeReview} />
-          )}
+          {reviewId && <PRDetail reviewId={reviewId} onBack={closeReview} />}
           {!reviewId && path === '/tables' && <TablesPage />}
-          {!reviewId && path !== '/tables' && (
+          {!reviewId && path === '/review' && <QuickReview onOpenReview={openReview} />}
+          {!reviewId && path !== '/tables' && path !== '/review' && (
             <Dashboard
               onSelectReview={openReview}
               activeRepo={activeRepo}
               onClearRepoFilter={() => setActiveRepo(null)}
-              navigate={go}
+              pendingScroll={pendingScroll}
+              onScrollHandled={() => setPendingScroll(null)}
             />
           )}
         </main>

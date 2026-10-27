@@ -1000,3 +1000,225 @@ a:focus-visible {
     transition: none !important;
   }
 }
+
+/* ---------------------------------------------------------------------
+   Score badge
+--------------------------------------------------------------------- */
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.score-badge.tone-good { background: var(--accent-2-soft); color: var(--accent-2); }
+.score-badge.tone-mid { background: var(--warning-soft); color: var(--warning); }
+.score-badge.tone-bad { background: var(--blocking-soft); color: var(--blocking); }
+
+.badge.quick_check {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+/* ---------------------------------------------------------------------
+   Sidebar: collapsible section header, per-repo connect toggle
+--------------------------------------------------------------------- */
+.sidebar-section-toggle {
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.sidebar-section-toggle:hover {
+  color: var(--text);
+}
+
+.sidebar-repo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 8px;
+  border-radius: 8px;
+}
+
+.sidebar-repo:hover {
+  background: var(--hover);
+}
+
+.sidebar-repo.is-active {
+  background: var(--accent-soft);
+}
+
+.sidebar-repo.is-active .sidebar-repo-name {
+  color: var(--accent);
+}
+
+.sidebar-repo-name-btn {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  color: var(--text);
+  font-size: 12.5px;
+}
+
+.sidebar-repo-connect {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sidebar-repo-connect.is-on {
+  background: var(--accent-2-soft);
+  border-color: var(--accent-2-soft);
+  color: var(--accent-2);
+}
+
+.sidebar-repo-connect:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+/* ---------------------------------------------------------------------
+   Quick Check page
+--------------------------------------------------------------------- */
+.quick-review {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.panel-header-plain h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-family: 'Sora', sans-serif;
+  font-size: 22px;
+}
+
+.panel-header-plain p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  max-width: 640px;
+}
+
+.quick-review-editor {
+  padding: 16px;
+}
+
+.quick-review-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.filename-input {
+  flex: 1;
+  max-width: 280px;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+}
+
+.code-textarea {
+  width: 100%;
+  min-height: 260px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 9px 16px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.quick-review-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+}
+
+.pr-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px 18px 0;
+}
+
+.pr-form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.pr-form-full {
+  grid-column: 1 / -1;
+}
+
+.pr-form-grid input,
+.pr-form-grid select,
+.pr-form-grid textarea {
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.pr-form {
+  padding-bottom: 18px;
+}
+
+.pr-form > .btn-primary {
+  margin: 14px 18px 0;
+}
