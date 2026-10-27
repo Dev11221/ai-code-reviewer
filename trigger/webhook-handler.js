@@ -89,6 +89,25 @@ async function processReview(event) {
   }
 
   try {
+    console.log('Saving review to database...');
+    const t3 = Date.now();
+    const reviewId = await createReview({
+      sourceType: 'github_pr',
+      repoOwner: owner,
+      repoName: repo,
+      prNumber: pullNumber,
+      diffText: diff,
+    });
+
+    for (const finding of review) {
+      await saveFinding(reviewId, finding);
+    }
+    console.log(`--- SAVED REVIEW #${reviewId} WITH ${review.length} FINDING(S) (${((Date.now() - t3) / 1000).toFixed(1)}s) ---`);
+  } catch (err) {
+    console.error('FAILED at saving review/findings to DB:', err.message);
+  }
+
+  try {
     console.log('Posting comment to GitHub...');
     const t4 = Date.now();
     let commentBody;
