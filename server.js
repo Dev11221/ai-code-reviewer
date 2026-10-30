@@ -48,31 +48,45 @@ const server = app.listen(PORT, () => {
 // Set SMEE_URL in .env to enable it; leave it blank to skip (e.g. if you're
 // exposing the webhook another way, like a real public URL).
 // ---------------------------------------------------------------------------
-let smeeClient = null;
+let smeeEvents;
+
 if (process.env.SMEE_URL) {
-  const SmeeClient = require('smee-client').default;
-  const webhookPath = process.env.WEBHOOK_PATH || '/webhook/github';
+  (async () => {
+    try {
+      const { default: SmeeClient } = await import('smee-client');
+      const webhookPath = process.env.WEBHOOK_PATH || '/webhook/github';
 
-  smeeClient = new SmeeClient({
-    source: process.env.SMEE_URL,
-    target: `http://localhost:${PORT}${webhookPath}`,
-    logger: {
-      info: (msg) => console.log(`[smee] ${msg}`),
-      error: (msg) => console.error(`[smee] ${msg}`),
-    },
-  });
+      const smeeClient = new SmeeClient({
+        source: process.env.SMEE_URL,
+        target: `http://localhost:${PORT}${webhookPath}`,
+        logger: {
+          info: (msg) => console.log(`[smee] ${msg}`),
+          error: (msg) => console.error(`[smee] ${msg}`),
+        },
+      });
 
-  var smeeEvents = smeeClient.start();
-  console.log(`[smee] forwarding ${process.env.SMEE_URL} -> http://localhost:${PORT}${webhookPath}`);
+      smeeEvents = smeeClient.start();
+
+      console.log(
+        `[smee] forwarding ${process.env.SMEE_URL} -> http://localhost:${PORT}${webhookPath}`
+      );
+    } catch (err) {
+      console.error('[smee] Failed to start client:', err.message);
+    }
+  })();
 } else {
-  console.log('[smee] SMEE_URL not set in .env — skipping embedded webhook forwarding.');
+  console.log(
+    '[smee] SMEE_URL not set in .env — skipping embedded webhook forwarding.'
+  );
 }
 
 function shutdown() {
   console.log('\nShutting down...');
+
   if (smeeEvents && typeof smeeEvents.close === 'function') {
     smeeEvents.close();
   }
+
   server.close(() => process.exit(0));
   setTimeout(() => process.exit(0), 1500).unref();
 }
