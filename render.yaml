@@ -2,7 +2,7 @@ services:
   - type: web
     name: ai-code-reviewer
     runtime: node
-    plan: starter
+    plan: free
     buildCommand: npm ci && npm ci --prefix dashboard/client && npm run build
     startCommand: npm run start:render
     healthCheckPath: /healthz
@@ -10,9 +10,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        fromDatabase:
-          name: ai-code-reviewer-db
-          property: connectionString
+        sync: false
       - key: DATABASE_SSL
         value: verify
       - key: SESSION_SECRET
@@ -29,9 +27,3 @@ services:
         sync: false
       - key: GITHUB_APP_CLIENT_SECRET
         sync: false
-
-databases:
-  - name: ai-code-reviewer-db
-    plan: basic-256mb
-    databaseName: ai_code_reviewer
-    user: ai_code_reviewer

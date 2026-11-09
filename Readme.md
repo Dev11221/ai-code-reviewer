@@ -305,22 +305,20 @@ GitHub Actions (`.github/workflows`) runs the tests, `npm audit`, secret scannin
 
 ### Render
 
-The root `render.yaml` defines the web service and a persistent Render PostgreSQL database. To deploy:
+The root `render.yaml` defines a free Render web service and uses your existing Neon database. To deploy:
 
 1. Push the project branch you want Render to deploy to GitHub.
 2. In Render, choose **New → Blueprint**, connect the repository, and select the branch containing `render.yaml`.
-3. Enter the prompted secrets: `GEMINI_API_KEY`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_APP_SLUG`, `GITHUB_APP_CLIENT_ID`, and `GITHUB_APP_CLIENT_SECRET`. Render generates `SESSION_SECRET` and connects the database. The service applies migrations during startup.
+3. Enter the prompted values: your Neon connection string for `DATABASE_URL`, plus `GEMINI_API_KEY`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_APP_SLUG`, `GITHUB_APP_CLIENT_ID`, and `GITHUB_APP_CLIENT_SECRET`. Render generates `SESSION_SECRET`. The service applies migrations to Neon during startup.
 4. After the first deploy, copy the service URL (for example, `https://ai-code-reviewer.onrender.com`). In GitHub App settings, set **Homepage URL** to that URL, **Callback URL** to `<service URL>/api/auth/github/app/callback`, and **Webhook URL** to `<service URL>/webhook/github`. The configured webhook secret must match `GITHUB_WEBHOOK_SECRET`.
 5. In GitHub App settings, enable user authorization during installation, enable the Pull requests event, and grant the repository permissions described above. Install the App on the repositories you want reviewed.
-6. Create the first admin against the Render database. In Render Postgres, copy its **External Database URL**. In PowerShell, from your project folder run:
+6. Create the first admin in Neon. If your local `.env` already points to this same Neon database, run this from your project folder:
 
    ```powershell
-   $env:DATABASE_URL = 'paste-the-external-database-url-here'
    npm run create-admin
-   Remove-Item Env:DATABASE_URL
    ```
 
-   This creates the account in the hosted database. Keep the database URL private. Then visit `<service URL>/admin`, sign in, and set up the authenticator app. The Blueprint uses paid Render service/database plans to keep the app available and its database persistent; review the plans in Render before creating the Blueprint.
+   If your local `.env` uses a different database, temporarily set `DATABASE_URL` to the same Neon connection string you entered in Render before running the command. This creates the account in the hosted database. Then visit `<service URL>/admin`, sign in, and set up the authenticator app. Render's free web service may sleep when idle; Neon remains the database.
 
 The Render service serves both the dashboard and API from one HTTPS address. Render supplies the public service URL automatically for OAuth callback defaults. If you later add a custom domain, update `DASHBOARD_URL` and the GitHub App URLs to match.
 
