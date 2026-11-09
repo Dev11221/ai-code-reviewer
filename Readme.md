@@ -155,7 +155,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 | `SESSION_DAYS` | No | Visitor session lifetime (default 30) |
 | `ADMIN_IDLE_MINUTES` / `ADMIN_MAX_HOURS` | No | Admin session idle timeout (default 30) and absolute lifetime (default 8) |
 | `PORT` | No | API port (default 3000) |
-| `DASHBOARD_URL` | No | Dashboard address (default `http://localhost:5173`) |
+| `DASHBOARD_URL` | No | Public dashboard address; defaults to Render's service URL on Render and `http://localhost:5173` locally |
 | `ALLOWED_ORIGINS` | No | Extra browser origins allowed to call the API |
 | `TRUST_PROXY` | Production | Number of reverse proxies in front of the app, for example `1` |
 | `SERVE_CLIENT` | No | Serve the built dashboard from Express (default on in production) |
@@ -198,22 +198,9 @@ The dashboard proxies `/api` to the server, so the browser only talks to one add
 
 Open the dashboard and click **Connect GitHub**. When configured, choose **Continue with GitHub** to authorize or sign back in. Use **Install or manage repository access** to choose which repositories the app can access. Its short-lived user token is encrypted and refreshed automatically. Personal access token connection remains available as a fallback. Reviews are linked to the connected account and visible only to that account.
 
-To configure GitHub App sign-in, enable **Request user authorization (OAuth) during installation**, set the callback URL to `GITHUB_APP_CALLBACK_URL`, subscribe to **Pull request** events, and grant repository **Contents: Read and write** and **Pull requests: Read and write**. Configure the app webhook URL and secret using the webhook steps below. Set `GITHUB_APP_SLUG`, `GITHUB_APP_CLIENT_ID`, and `GITHUB_APP_CLIENT_SECRET` on the server.
+To configure GitHub App sign-in, enable **Request user authorization (OAuth) during installation**, set the callback URL to `GITHUB_APP_CALLBACK_URL`, subscribe to **Pull request** events, and grant repository **Contents: Read and write** and **Pull requests: Read and write**. Configure the App's webhook URL and secret, then set `GITHUB_APP_SLUG`, `GITHUB_APP_CLIENT_ID`, and `GITHUB_APP_CLIENT_SECRET` on the server. Install the GitHub App on each repository you want reviewed; you do not need to add a separate webhook to every repository.
 
-### Each repository: add the webhook
-
-In the repository: **Settings → Webhooks → Add webhook**.
-
-| Field | Value |
-|---|---|
-| Payload URL | Development: your `SMEE_URL`. Production: `https://your-domain/webhook/github` |
-| Content type | `application/json` |
-| Secret | The same value as `GITHUB_WEBHOOK_SECRET` |
-| Events | "Let me select individual events" → **Pull requests** |
-
-Open or push to a pull request and the review usually appears in the dashboard within a minute.
-
-Development with smee.io: create a channel at [smee.io](https://smee.io), put its URL in `SMEE_URL`, and the dev server forwards deliveries to your machine automatically. In production, point GitHub directly at your server and leave `SMEE_URL` unset.
+For local webhook testing, create a channel at [smee.io](https://smee.io), put its URL in `SMEE_URL`, and the dev server forwards deliveries to your machine automatically. In production, set the GitHub App webhook URL to `https://your-domain/webhook/github` and leave `SMEE_URL` unset.
 
 ## Using the app
 
@@ -253,6 +240,7 @@ Terminal commands for account recovery and maintenance:
 | `npm run server` / `npm run client` | Run either one alone |
 | `npm run build` | Production build of the dashboard |
 | `npm start` | Start the server (set `NODE_ENV=production` for production) |
+| `npm run start:render` | Apply migrations, then start the server on Render |
 | `npm run migrate` | Apply database migrations |
 | `npm test` | Unit and integration tests |
 | `npm run audit:deps` | Fail on high or critical dependency vulnerabilities |
@@ -315,12 +303,28 @@ GitHub Actions (`.github/workflows`) runs the tests, `npm audit`, secret scannin
 
 ## Deployment
 
-1. Set `NODE_ENV=production`, `DATABASE_URL`, `SESSION_SECRET`, `GITHUB_WEBHOOK_SECRET`, `GEMINI_API_KEY` and `TRUST_PROXY` in the host's environment (not in a committed file).
-2. Build and migrate: `npm run install:all && npm run build && npm run migrate`.
-3. Create the first admin on the server: `npm run create-admin`.
-4. Start with `npm start`. Express serves the dashboard and API from one address.
-5. Put the app behind HTTPS (a reverse proxy or your platform's TLS), install Semgrep on the host, and point each repository's webhook at `https://your-domain/webhook/github`.
-6. Keep `SESSION_SECRET` backed up. Changing it makes stored GitHub tokens unreadable (users reconnect once) and requires resetting admins' MFA.
+### Render
+
+The root `render.yaml` defines the web service and a persistent Render PostgreSQL database. To deploy:
+
+1. Push the project branch you want Render to deploy to GitHub.
+2. In Render, choose **New → Blueprint**, connect the repository, and select the branch containing `render.yaml`.
+3. Enter the prompted secrets: `GEMINI_API_KEY`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_APP_SLUG`, `GITHUB_APP_CLIENT_ID`, and `GITHUB_APP_CLIENT_SECRET`. Render generates `SESSION_SECRET` and connects the database. The service applies migrations during startup.
+4. After the first deploy, copy the service URL (for example, `https://ai-code-reviewer.onrender.com`). In GitHub App settings, set **Homepage URL** to that URL, **Callback URL** to `<service URL>/api/auth/github/app/callback`, and **Webhook URL** to `<service URL>/webhook/github`. The configured webhook secret must match `GITHUB_WEBHOOK_SECRET`.
+5. In GitHub App settings, enable user authorization during installation, enable the Pull requests event, and grant the repository permissions described above. Install the App on the repositories you want reviewed.
+6. Create the first admin against the Render database. In Render Postgres, copy its **External Database URL**. In PowerShell, from your project folder run:
+
+   ```powershell
+   $env:DATABASE_URL = 'paste-the-external-database-url-here'
+   npm run create-admin
+   Remove-Item Env:DATABASE_URL
+   ```
+
+   This creates the account in the hosted database. Keep the database URL private. Then visit `<service URL>/admin`, sign in, and set up the authenticator app. The Blueprint uses paid Render service/database plans to keep the app available and its database persistent; review the plans in Render before creating the Blueprint.
+
+The Render service serves both the dashboard and API from one HTTPS address. Render supplies the public service URL automatically for OAuth callback defaults. If you later add a custom domain, update `DASHBOARD_URL` and the GitHub App URLs to match.
+
+For another host, set `NODE_ENV=production`, `DATABASE_URL`, `SESSION_SECRET`, `GITHUB_WEBHOOK_SECRET`, `GEMINI_API_KEY`, and `TRUST_PROXY` in that host's environment. Build with `npm run install:all && npm run build`; start with `npm run start:render` to apply migrations before serving. Keep `SESSION_SECRET` backed up. Changing it makes stored GitHub tokens unreadable (users reconnect once) and requires resetting admins' MFA.
 
 Rate limits are held in memory, which is correct for a single server process; use a shared store if you run several instances.
 

@@ -40,7 +40,7 @@ const Schema = z.object({
   GITHUB_APP_CALLBACK_URL: z.url().optional(),
   WEBHOOK_PATH: z.string().regex(/^\/[A-Za-z0-9/_-]*$/).default('/webhook/github'),
   SMEE_URL: z.url().optional(),
-  DASHBOARD_URL: z.url().default('http://localhost:5173'),
+  DASHBOARD_URL: z.url().optional(),
   ALLOWED_ORIGINS: z.string().default(''),
   TRUST_PROXY: z.string().optional(),
   SESSION_DAYS: z.coerce.number().int().min(1).max(365).default(30),
@@ -85,7 +85,10 @@ function load(env = process.env) {
     warnings.push('SESSION_SECRET is not set - using a generated development secret from .data/session-secret.');
   }
 
-  const dashboardOrigin = new URL(e.DASHBOARD_URL).origin;
+  // Render provides the public service URL at runtime. Keep localhost as the
+  // development fallback, while allowing an explicit custom domain to win.
+  const dashboardUrl = (e.DASHBOARD_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173').replace(/\/+$/, '');
+  const dashboardOrigin = new URL(dashboardUrl).origin;
   const allowedOrigins = [
     ...new Set(
       [dashboardOrigin, ...e.ALLOWED_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean)].map((o) => {
@@ -126,11 +129,11 @@ function load(env = process.env) {
     githubAppSlug: e.GITHUB_APP_SLUG,
     githubAppClientId: e.GITHUB_APP_CLIENT_ID,
     githubAppClientSecret: e.GITHUB_APP_CLIENT_SECRET,
-    githubAppCallbackUrl: e.GITHUB_APP_CALLBACK_URL || `${e.DASHBOARD_URL.replace(/\/+$/, '')}/api/auth/github/app/callback`,
+    githubAppCallbackUrl: e.GITHUB_APP_CALLBACK_URL || `${dashboardUrl}/api/auth/github/app/callback`,
     githubAppEnabled: Boolean(e.GITHUB_APP_SLUG && e.GITHUB_APP_CLIENT_ID && e.GITHUB_APP_CLIENT_SECRET),
     webhookPath: e.WEBHOOK_PATH,
     smeeUrl: e.SMEE_URL,
-    dashboardUrl: e.DASHBOARD_URL.replace(/\/+$/, ''),
+    dashboardUrl,
     allowedOrigins,
     trustProxy,
     sessionDays: e.SESSION_DAYS,

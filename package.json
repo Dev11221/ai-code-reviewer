@@ -10,6 +10,7 @@
     "create-admin": "node scripts/admin-cli.js create",
     "admin": "node scripts/admin-cli.js",
     "server": "node server.js",
+    "start:render": "npm run migrate && npm start",
     "client": "npm run dev --prefix dashboard/client",
     "dev": "concurrently -k -n SERVER,CLIENT -c blue,green \"npm:server\" \"npm:client\"",
     "build": "npm run build --prefix dashboard/client",
