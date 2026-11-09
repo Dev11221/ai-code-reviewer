@@ -322,7 +322,7 @@ The root `render.yaml` defines a free Render web service and uses your existing 
 
 The Render service serves both the dashboard and API from one HTTPS address. Render supplies the public service URL automatically for OAuth callback defaults. If you later add a custom domain, update `DASHBOARD_URL` and the GitHub App URLs to match.
 
-For another host, set `NODE_ENV=production`, `DATABASE_URL`, `SESSION_SECRET`, `GITHUB_WEBHOOK_SECRET`, `GEMINI_API_KEY`, and `TRUST_PROXY` in that host's environment. Build with `npm run install:all && npm run build`; start with `npm run start:render` to apply migrations before serving. Keep `SESSION_SECRET` backed up. Changing it makes stored GitHub tokens unreadable (users reconnect once) and requires resetting admins' MFA.
+For a manual Render Web Service, use build command `npm ci && npm ci --prefix dashboard/client --include=dev && npm run build` and start command `npm run start:render`. The explicit `--include=dev` is needed because Vite is a dashboard build dependency. For another host, set `NODE_ENV=production`, `DATABASE_URL`, `SESSION_SECRET`, `GITHUB_WEBHOOK_SECRET`, `GEMINI_API_KEY`, and `TRUST_PROXY` in that host's environment. Build with `npm run install:all && npm run build`; start with `npm run start:render` to apply migrations before serving. Keep `SESSION_SECRET` backed up. Changing it makes stored GitHub tokens unreadable (users reconnect once) and requires resetting admins' MFA.
 
 Rate limits are held in memory, which is correct for a single server process; use a shared store if you run several instances.
 

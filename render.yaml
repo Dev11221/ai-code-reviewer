@@ -3,7 +3,7 @@ services:
     name: ai-code-reviewer
     runtime: node
     plan: free
-    buildCommand: npm ci && npm ci --prefix dashboard/client && npm run build
+    buildCommand: npm ci && npm ci --prefix dashboard/client --include=dev && npm run build
     startCommand: npm run start:render
     healthCheckPath: /healthz
     envVars:
