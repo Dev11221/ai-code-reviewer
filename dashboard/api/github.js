@@ -5,6 +5,7 @@ const router = express.Router();
 const { resolveGithubAuth, forgetUser } = require('../../lib/session');
 const { requireGithubUser } = require('../../middleware/auth');
 const { HttpError, wrap } = require('../../middleware/errors');
+const { getConfig } = require('../../config/env');
 
 // Whether this browser is connected, and as whom. Served from our own database.
 router.get('/github/status', wrap(async (req, res) => {
@@ -15,13 +16,14 @@ router.get('/github/status', wrap(async (req, res) => {
     console.error('[github/status]', err.message);
     return res.json({ connected: false, reason: 'Could not check your GitHub connection.' });
   }
-  if (!auth) return res.json({ connected: false });
+  if (!auth) return res.json({ connected: false, githubAppEnabled: getConfig().githubAppEnabled });
   return res.json({
     connected: true,
     login: auth.login,
     name: auth.name,
     avatarUrl: auth.avatarUrl,
     profileUrl: `https://github.com/${encodeURIComponent(auth.login)}`,
+    githubAppEnabled: getConfig().githubAppEnabled,
   });
 }));
 

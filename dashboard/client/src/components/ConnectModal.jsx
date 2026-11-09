@@ -8,7 +8,7 @@ const NEW_TOKEN_URL =
   'https://github.com/settings/tokens/new?scopes=repo&description=' + encodeURIComponent('AI Code Reviewer');
 
 export default function ConnectModal() {
-  const { connectOpen, closeConnect, connectWithToken } = useGithub();
+  const { connectOpen, closeConnect, connectWithToken, githubAppEnabled } = useGithub();
   const [token, setToken] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -51,6 +51,13 @@ export default function ConnectModal() {
             <X size={16} />
           </button>
         </div>
+
+        {githubAppEnabled ? <div className="github-app-connect">
+          <div><strong>Connect with GitHub App</strong><p>Sign in with GitHub. The app can access repositories where it is installed—no personal token to paste.</p></div>
+          <a className="btn-primary modal-wide" href="/api/auth/github/app/start"><Github size={15} /> Continue with GitHub <ExternalLink size={13} /></a>
+          <a className="github-app-install-link" href="/api/auth/github/app/install">Install or manage repository access <ExternalLink size={12} /></a>
+          <div className="connect-divider"><span>or use a personal token</span></div>
+        </div> : <div className="connect-setup-note"><ShieldCheck size={15} /> GitHub App connection is not configured on this server yet. You can use a token for now.</div>}
 
         <ol className="modal-steps">
           <li>

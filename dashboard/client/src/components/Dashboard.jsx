@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
-import { Search, X, GitPullRequest, FileUp, Code2, Github } from 'lucide-react';
+import { Search, X, GitPullRequest, FileUp, Code2, Github, ArrowUpRight } from 'lucide-react';
 import api from '../api.js';
 import { useLive } from '../context/LiveContext.jsx';
 import { useGithub } from '../context/GithubContext.jsx';
@@ -19,7 +19,7 @@ function ScoreBadge({ score }) {
   return <span className={`score-badge tone-${tone}`}>{score}</span>;
 }
 
-export default function Dashboard({ onSelectReview, activeRepo, onClearRepoFilter, pendingScroll, onScrollHandled }) {
+export default function Dashboard({ onSelectReview, onOpenQuickCheck, activeRepo, onClearRepoFilter, pendingScroll, onScrollHandled }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -97,11 +97,25 @@ export default function Dashboard({ onSelectReview, activeRepo, onClearRepoFilte
         </div>
       )}
 
+      <div className="dashboard-heading">
+        <div>
+          <div className="dashboard-eyebrow">Workspace</div>
+          <h1>Review overview</h1>
+          <p>Recent code reviews and findings across your repositories.</p>
+        </div>
+        <button className="btn-primary dashboard-action" onClick={onOpenQuickCheck}>
+          <Code2 size={15} /> New quick check <ArrowUpRight size={14} />
+        </button>
+      </div>
+
       <StatCards reviews={reviews} />
 
-      <div className="panel">
+      <div className="panel reviews-panel">
         <div className="panel-header">
-          <h3>Reviews</h3>
+          <div className="reviews-heading">
+            <h3>Recent reviews</h3>
+            <span>{activeRepo ? 'Filtered by repository' : 'Your latest review activity'}</span>
+          </div>
           <div className="table-toolbar">
             {activeRepo && (
               <button className="chip chip-active" onClick={onClearRepoFilter}>
@@ -112,10 +126,12 @@ export default function Dashboard({ onSelectReview, activeRepo, onClearRepoFilte
               <Search size={14} />
               <input
                 placeholder="Search reviews…"
+                aria-label="Search reviews"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
+            <span className="review-result-count">{filtered.length} {filtered.length === 1 ? 'review' : 'reviews'}</span>
           </div>
         </div>
 
@@ -130,11 +146,11 @@ export default function Dashboard({ onSelectReview, activeRepo, onClearRepoFilte
         )}
 
         {!loading && !error && filtered.length > 0 && (
-          <table>
+          <div className="review-table-wrap"><table className="review-table">
             <thead>
               <tr>
+                <th>Review</th>
                 <th>Source</th>
-                <th>Repo / File</th>
                 <th>Date</th>
                 <th>Score</th>
                 <th>Findings</th>
@@ -144,15 +160,17 @@ export default function Dashboard({ onSelectReview, activeRepo, onClearRepoFilte
               {filtered.map((review) => {
                 const meta = SOURCE_META[review.source_type] || SOURCE_META.upload;
                 const Icon = meta.icon;
+                const isPr = review.source_type === 'github_pr';
                 return (
-                  <tr key={review.id} onClick={() => onSelectReview(review.id)}>
+                  <tr key={review.id} className="review-row" tabIndex={0} onClick={() => onSelectReview(review.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectReview(review.id); } }}>
                     <td>
-                      <span className={`badge ${review.source_type}`}>
-                        <Icon size={12} /> {meta.label}
-                      </span>
+                      <div className="review-primary">
+                        <span className="review-source-icon"><Icon size={14} /></span>
+                        <span><span className="review-primary-title">{isPr ? review.repo_name : (review.file_name || 'Quick Check')}</span><span className="review-primary-meta">{isPr ? `${review.repo_owner} · Pull request #${review.pr_number}` : meta.label}</span></span>
+                      </div>
                     </td>
-                    <td className="mono-cell">{nameFor(review)}</td>
-                    <td className="muted-cell">{new Date(review.created_at).toLocaleDateString()}</td>
+                    <td><span className={`badge ${review.source_type}`}><Icon size={12} /> {meta.label}</span></td>
+                    <td className="muted-cell">{new Date(review.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
                     <td><ScoreBadge score={review.overall_score} /></td>
                     <td>
                       <span className={`finding-count ${review.finding_count > 0 ? 'has-findings' : ''}`}>
@@ -163,7 +181,7 @@ export default function Dashboard({ onSelectReview, activeRepo, onClearRepoFilte
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
 

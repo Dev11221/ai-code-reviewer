@@ -65,6 +65,7 @@ export default function App() {
           {!isAdmin && !reviewId && path !== '/review' && (
             <Dashboard
               onSelectReview={openReview}
+              onOpenQuickCheck={() => go('/review')}
               activeRepo={activeRepo}
               onClearRepoFilter={() => setActiveRepo(null)}
               pendingScroll={pendingScroll}

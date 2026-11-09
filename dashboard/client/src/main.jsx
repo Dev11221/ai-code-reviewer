@@ -7,6 +7,7 @@ import { LiveProvider } from './context/LiveContext.jsx';
 import './index.css';
 import './responsive.css';
 import './admin.css';
+import './premium.css';
 
 // GithubProvider is outside LiveProvider: live updates only start once a user is connected.
 ReactDOM.createRoot(document.getElementById('root')).render(

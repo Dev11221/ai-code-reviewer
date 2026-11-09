@@ -37,7 +37,7 @@ export default function Sidebar({ collapsed, onToggle, route, onNavigate, active
         >
           {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
         </button>
-        {!collapsed && <span className="sidebar-brand">Menu</span>}
+        {!collapsed && <div className="sidebar-brand-wrap"><span className="sidebar-brand">Workspace</span><span className="sidebar-brand-caption">AI Code Reviewer</span></div>}
       </div>
 
       <nav className="sidebar-nav">
@@ -99,8 +99,8 @@ export default function Sidebar({ collapsed, onToggle, route, onNavigate, active
                   </div>
                 ))}
               {connected && (
-                <div className="sidebar-empty" title="In the repo's GitHub settings, add a webhook for Pull requests events (content type application/json) using your webhook URL and the same secret as GITHUB_WEBHOOK_SECRET in .env.">
-                  Add a webhook on a repo (GitHub settings) to review its PRs.
+                <div className="sidebar-app-note">
+                  <Github size={13} /> Install the GitHub App on a repository to review its pull requests.
                 </div>
               )}
             </div>

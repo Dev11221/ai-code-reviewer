@@ -25,6 +25,20 @@ export function GithubProvider({ children }) {
   }, [refreshStatus]);
 
   useEffect(() => {
+    const url = new URL(window.location.href);
+    const result = url.searchParams.get('github');
+    if (result === 'error') {
+      setAuthError('GitHub App connection did not finish. Please try again or use a personal token.');
+      url.searchParams.delete('github');
+      url.searchParams.delete('reason');
+      window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    } else if (result === 'connected') {
+      url.searchParams.delete('github');
+      window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!status.connected) {
       setRepos([]);
       return;
@@ -65,7 +79,7 @@ export function GithubProvider({ children }) {
     try {
       await api.githubLogout();
     } finally {
-      setStatus({ loading: false, connected: false });
+      setStatus((current) => ({ ...current, loading: false, connected: false }));
       setRepos([]);
     }
   }, []);
@@ -74,6 +88,7 @@ export function GithubProvider({ children }) {
     <GithubContext.Provider
       value={{
         ...status,
+        githubAppEnabled: Boolean(status.githubAppEnabled),
         repos,
         reposLoading,
         authError,

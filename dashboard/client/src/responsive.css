@@ -19,6 +19,9 @@ body {
    Tablets and below (<= 900px)
 --------------------------------------------------------------------- */
 @media (max-width: 900px) {
+  .app-shell:has(.pr-detail) .app-main { padding-bottom: 12px; }
+  .review-workspace { grid-template-columns: 5px minmax(0, 1fr) 30px; gap: 7px; }
+  .review-scroll-controls button { width: 28px; height: 28px; }
   /* The slide-over sidebar: fit narrow phones and scroll if it's tall. */
   .sidebar {
     width: min(260px, 85vw);
@@ -78,6 +81,12 @@ body {
    Phones (<= 700px)
 --------------------------------------------------------------------- */
 @media (max-width: 700px) {
+  .review-workspace { grid-template-columns: 4px minmax(0, 1fr) 28px; gap: 6px; }
+  .finding-filters { flex-wrap: wrap; padding: 10px; }
+  .finding-filter-select { flex: 1; }
+  .finding-filter-search { flex: 1 1 100%; order: 3; }
+  .finding-card { padding: 14px 12px; }
+  .finding-file-link { max-width: 100%; }
   .topbar {
     padding: 0 12px;
   }

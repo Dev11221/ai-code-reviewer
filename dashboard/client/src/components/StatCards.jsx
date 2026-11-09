@@ -7,23 +7,19 @@ export default function StatCards({ reviews }) {
   const avgFindings = totalReviews ? (totalFindings / totalReviews).toFixed(1) : '0';
 
   const cards = [
-    { label: 'Total reviews', value: totalReviews, icon: FileSearch, tone: 'violet' },
-    { label: 'PRs reviewed', value: prReviews, icon: GitPullRequest, tone: 'teal' },
-    { label: 'Total findings', value: totalFindings, icon: AlertTriangle, tone: 'amber' },
-    { label: 'Avg findings / review', value: avgFindings, icon: ShieldAlert, tone: 'rose' },
+    { label: 'Total reviews', value: totalReviews, note: 'Across your workspace', icon: FileSearch, tone: 'violet' },
+    { label: 'PRs reviewed', value: prReviews, note: 'Automated GitHub reviews', icon: GitPullRequest, tone: 'teal' },
+    { label: 'Total findings', value: totalFindings, note: 'Across completed reviews', icon: AlertTriangle, tone: 'amber' },
+    { label: 'Avg. findings / review', value: avgFindings, note: 'Workspace average', icon: ShieldAlert, tone: 'rose' },
   ];
 
   return (
     <div className="stat-cards">
-      {cards.map(({ label, value, icon: Icon, tone }) => (
+      {cards.map(({ label, value, note, icon: Icon, tone }) => (
         <div key={label} className={`stat-card tone-${tone}`}>
-          <div className="stat-card-icon">
-            <Icon size={18} />
-          </div>
-          <div>
-            <div className="stat-card-value">{value}</div>
-            <div className="stat-card-label">{label}</div>
-          </div>
+          <div className="stat-card-top"><div className="stat-card-label">{label}</div><div className="stat-card-icon"><Icon size={16} /></div></div>
+          <div className="stat-card-value">{value}</div>
+          <div className="stat-card-note">{note}</div>
         </div>
       ))}
     </div>

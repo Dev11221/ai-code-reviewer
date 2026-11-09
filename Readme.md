@@ -146,6 +146,9 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 | `GEMINI_API_KEY` | Yes | Key for the AI review step |
 | `GEMINI_MODEL` | No | Model name (default set in `config/env.js`) |
 | `GITHUB_WEBHOOK_SECRET` | Yes, for PR reviews | Shared secret for verifying webhooks (16+ characters). Webhooks are rejected without it |
+| `GITHUB_APP_SLUG` | No | GitHub App URL slug; enables the install flow when all GitHub App credentials are set |
+| `GITHUB_APP_CLIENT_ID` / `GITHUB_APP_CLIENT_SECRET` | No | GitHub App OAuth credentials |
+| `GITHUB_APP_CALLBACK_URL` | No | Registered callback URL (defaults to `<DASHBOARD_URL>/api/auth/github/app/callback`) |
 | `WEBHOOK_PATH` | No | Webhook route (default `/webhook/github`) |
 | `SMEE_URL` | No | Development only: smee.io channel forwarded to your machine. Ignored in production |
 | `SESSION_SECRET` | Production | 32+ random characters; encrypts stored tokens and authenticator secrets. In development, one is generated in `.data/` if unset |
@@ -193,7 +196,9 @@ The dashboard proxies `/api` to the server, so the browser only talks to one add
 
 ### Each user: connect an account
 
-Open the dashboard and click **Connect GitHub**. Paste a personal access token (GitHub → Settings → Developer settings → Personal access tokens). A classic token needs the `repo` scope; a fine-grained token limited to your repositories also works. The token is verified with GitHub, then stored encrypted. Reviews are linked to the connected account used to access the repository, and are visible only to that account.
+Open the dashboard and click **Connect GitHub**. When configured, choose **Continue with GitHub** to authorize or sign back in. Use **Install or manage repository access** to choose which repositories the app can access. Its short-lived user token is encrypted and refreshed automatically. Personal access token connection remains available as a fallback. Reviews are linked to the connected account and visible only to that account.
+
+To configure GitHub App sign-in, enable **Request user authorization (OAuth) during installation**, set the callback URL to `GITHUB_APP_CALLBACK_URL`, subscribe to **Pull request** events, and grant repository **Contents: Read and write** and **Pull requests: Read and write**. Configure the app webhook URL and secret using the webhook steps below. Set `GITHUB_APP_SLUG`, `GITHUB_APP_CLIENT_ID`, and `GITHUB_APP_CLIENT_SECRET` on the server.
 
 ### Each repository: add the webhook
 
