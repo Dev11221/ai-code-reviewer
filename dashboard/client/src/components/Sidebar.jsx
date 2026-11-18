@@ -37,7 +37,7 @@ export default function Sidebar({ collapsed, onToggle, route, onNavigate, active
         >
           {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
         </button>
-        {!collapsed && <div className="sidebar-brand-wrap"><span className="sidebar-brand">Workspace</span><span className="sidebar-brand-caption">ScureCode AI</span></div>}
+        {!collapsed && <div className="sidebar-brand-wrap"><span className="sidebar-brand">Workspace</span><span className="sidebar-brand-caption">SecureCode AI</span></div>}
       </div>
 
       <nav className="sidebar-nav">

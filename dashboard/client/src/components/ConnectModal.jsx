@@ -5,7 +5,7 @@ import { useGithub } from '../context/GithubContext.jsx';
 // Where users create the token. Opens GitHub's "new token" page with the right
 // permission (repo) and a name already filled in.
 const NEW_TOKEN_URL =
-  'https://github.com/settings/tokens/new?scopes=repo&description=' + encodeURIComponent('ScureCode AI');
+  'https://github.com/settings/tokens/new?scopes=repo&description=' + encodeURIComponent('SecureCode AI');
 
 export default function ConnectModal() {
   const { connectOpen, closeConnect, connectWithToken, githubAppEnabled } = useGithub();

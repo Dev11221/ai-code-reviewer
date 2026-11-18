@@ -26,7 +26,7 @@ export default function Topbar({ onToggleSidebar, live, onNavigate, adminActive 
         </button>
         <button className="topbar-brand" onClick={() => onNavigate('/')}>
           <span className="topbar-brand-mark">SC</span>
-          <span className="topbar-brand-text">ScureCode AI</span>
+          <span className="topbar-brand-text">SecureCode AI</span>
         </button>
       </div>
 

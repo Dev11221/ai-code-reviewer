@@ -101,7 +101,7 @@ function RecoveryCodes({ codes, onContinue }) {
   const [saved, setSaved] = useState(false);
   const text = codes.join('\n');
   const download = () => {
-    const url = URL.createObjectURL(new Blob([`ScureCode AI - admin recovery codes\nEach code works once.\n\n${text}\n`], { type: 'text/plain' }));
+    const url = URL.createObjectURL(new Blob([`SecureCode AI - admin recovery codes\nEach code works once.\n\n${text}\n`], { type: 'text/plain' }));
     const a = document.createElement('a');
     a.href = url;
     a.download = 'recovery-codes.txt';
