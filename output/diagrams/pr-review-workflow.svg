@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<defs>
+  <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#0B1424"/><stop offset="1" stop-color="#142640"/></linearGradient><linearGradient id="accent" x2="1"><stop stop-color="#5B6CFA"/><stop offset="1" stop-color="#1EC8B5"/></linearGradient>
+  <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#020713" flood-opacity=".32"/></filter><marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M1 1 11 6 1 11" fill="none" stroke="#89A5C5" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  <style>.title{font:700 43px 'Segoe UI',Arial,sans-serif;fill:#F5F8FF}.sub{font:400 19px 'Segoe UI',Arial,sans-serif;fill:#9FB2CC}.eyebrow{font:700 14px 'Segoe UI',Arial,sans-serif;letter-spacing:2.4px;fill:#66DBC9}.card{fill:#182A43;stroke:#304761;stroke-width:1.5}.label{font:700 18px 'Segoe UI',Arial,sans-serif;fill:#F4F7FC}.small{font:400 14px 'Segoe UI',Arial,sans-serif;fill:#A8B9CE}.tag{font:700 12px 'Segoe UI',Arial,sans-serif;letter-spacing:1.3px;fill:#A8BDD7}.arrow{fill:none;stroke:#89A5C5;stroke-width:2.5;marker-end:url(#arrow)}.num{font:700 14px 'Segoe UI',Arial,sans-serif;fill:#EAF0FC}</style>
+</defs>
+<rect width="1600" height="900" rx="32" fill="url(#bg)"/><circle cx="1500" cy="30" r="250" fill="#3A56A8" opacity=".11"/><circle cx="80" cy="860" r="200" fill="#19B9A9" opacity=".07"/>
+<text x="86" y="76" class="eyebrow">AI CODE REVIEWER  /  AUTOMATED PR</text><text x="86" y="134" class="title">From pull request to review comment</text><text x="86" y="169" class="sub">A verified GitHub event starts the review; results return to the dashboard and PR.</text>
+<!-- row 1 -->
+<g filter="url(#shadow)"><rect x="82" y="254" width="290" height="166" rx="22" class="card"/><rect x="445" y="254" width="290" height="166" rx="22" class="card"/><rect x="808" y="254" width="290" height="166" rx="22" class="card"/><rect x="1171" y="254" width="340" height="166" rx="22" class="card"/></g>
+<circle cx="121" cy="296" r="21" fill="#283C68"/><text x="121" y="301" text-anchor="middle" class="num">1</text><text x="157" y="292" class="label">PR event</text><text x="109" y="338" class="small">Developer opens or updates</text><text x="109" y="361" class="small">a pull request on GitHub.</text><text x="109" y="393" class="tag">GITHUB APP</text>
+<path d="M372 337h62" class="arrow"/>
+<circle cx="484" cy="296" r="21" fill="#283C68"/><text x="484" y="301" text-anchor="middle" class="num">2</text><text x="520" y="292" class="label">Verify and queue</text><text x="472" y="338" class="small">Check webhook signature,</text><text x="472" y="361" class="small">ignore duplicates, enqueue job.</text><text x="472" y="393" class="tag">EXPRESS SERVER</text>
+<path d="M735 337h62" class="arrow"/>
+<circle cx="847" cy="296" r="21" fill="#283C68"/><text x="847" y="301" text-anchor="middle" class="num">3</text><text x="883" y="292" class="label">Get PR diff</text><text x="835" y="338" class="small">Use authorized access to fetch</text><text x="835" y="361" class="small">the changed files and patch.</text><text x="835" y="393" class="tag">REPOSITORY ACCESS</text>
+<path d="M1098 337h62" class="arrow"/>
+<circle cx="1210" cy="296" r="21" fill="#283C68"/><text x="1210" y="301" text-anchor="middle" class="num">4</text><text x="1246" y="292" class="label">Analyze changes</text><text x="1198" y="338" class="small">Run Semgrep and Gemini on</text><text x="1198" y="361" class="small">the changed code.</text><text x="1198" y="393" class="tag">REVIEW ENGINE</text>
+<!-- connector down and back -->
+<path d="M1341 420v91h-1182v42" class="arrow"/>
+<g filter="url(#shadow)"><rect x="82" y="570" width="340" height="160" rx="22" class="card"/><rect x="525" y="570" width="290" height="160" rx="22" class="card"/><rect x="918" y="570" width="290" height="160" rx="22" class="card"/><rect x="1285" y="570" width="226" height="160" rx="22" class="card"/></g>
+<circle cx="121" cy="610" r="21" fill="#154F59"/><text x="121" y="615" text-anchor="middle" class="num">5</text><text x="157" y="606" class="label">Validate findings</text><text x="109" y="652" class="small">Normalize the AI output, merge</text><text x="109" y="675" class="small">results, assign severity and score.</text><text x="109" y="706" class="tag">VALIDATION</text>
+<path d="M422 650h90" class="arrow"/>
+<circle cx="564" cy="610" r="21" fill="#283C68"/><text x="564" y="615" text-anchor="middle" class="num">6</text><text x="600" y="606" class="label">Save review</text><text x="552" y="652" class="small">Store the review and findings</text><text x="552" y="675" class="small">in Neon PostgreSQL.</text><text x="552" y="706" class="tag">DATABASE</text>
+<path d="M815 650h90" class="arrow"/>
+<circle cx="957" cy="610" r="21" fill="#283C68"/><text x="957" y="615" text-anchor="middle" class="num">7</text><text x="993" y="606" class="label">Show in dashboard</text><text x="945" y="652" class="small">Users inspect status, diff,</text><text x="945" y="675" class="small">score and findings.</text><text x="945" y="706" class="tag">REACT UI</text>
+<path d="M1208 650h64" class="arrow"/>
+<circle cx="1324" cy="610" r="21" fill="#283C68"/><text x="1324" y="615" text-anchor="middle" class="num">8</text><text x="1360" y="606" class="label">Comment</text><text x="1310" y="652" class="small">Post results back</text><text x="1310" y="675" class="small">to the pull request.</text><text x="1310" y="706" class="tag">GITHUB</text>
+<rect x="84" y="784" width="1432" height="1" fill="#30445E"/><text x="86" y="820" class="small">The app can save static findings when Gemini is unavailable; AI results may be delayed by service quotas or timeouts.</text><text x="1515" y="820" text-anchor="end" class="tag">02 / PR WORKFLOW</text>
+</svg>
