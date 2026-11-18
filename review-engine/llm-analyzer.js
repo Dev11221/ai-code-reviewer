@@ -51,7 +51,9 @@ ${clipped}
       contents: prompt,
       config: {
         httpOptions: {
-          timeout: 60000, // fail fast instead of hanging if Gemini is slow/unresponsive
+          // Code review prompts can take longer than ordinary chat requests.
+          // Gemini may return 504 DEADLINE_EXCEEDED when this client deadline is too short.
+          timeout: 180000,
           maxRetries: 0, // withRetry() already handles retries at a higher level
         },
       },
