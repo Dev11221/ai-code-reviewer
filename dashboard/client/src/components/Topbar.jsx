@@ -25,8 +25,8 @@ export default function Topbar({ onToggleSidebar, live, onNavigate, adminActive 
           <Menu size={18} />
         </button>
         <button className="topbar-brand" onClick={() => onNavigate('/')}>
-          <span className="topbar-brand-mark">AI</span>
-          <span className="topbar-brand-text">Code Reviewer</span>
+          <span className="topbar-brand-mark">SC</span>
+          <span className="topbar-brand-text">ScureCode AI</span>
         </button>
       </div>
 
