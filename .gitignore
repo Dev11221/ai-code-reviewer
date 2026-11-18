@@ -1,6 +1,7 @@
 # dependencies & build output
 node_modules/
 dashboard/client/dist/
+.venv/
 
 # secrets and local state - never commit these
 .env

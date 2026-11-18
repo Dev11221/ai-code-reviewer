@@ -3,7 +3,7 @@ services:
     name: ai-code-reviewer
     runtime: node
     plan: free
-    buildCommand: npm ci && npm ci --prefix dashboard/client --include=dev && npm run build
+    buildCommand: python3 -m venv .venv && .venv/bin/python -m pip install --no-cache-dir semgrep && npm ci && npm ci --prefix dashboard/client --include=dev && npm run build
     startCommand: npm run start:render
     healthCheckPath: /healthz
     envVars:

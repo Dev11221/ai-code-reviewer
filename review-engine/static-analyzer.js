@@ -11,9 +11,13 @@ let warnedMissing = false;
 // file, each re-fetching rules over the network — far too slow for folders.)
 // Resolves to Semgrep's raw result objects, or [] if it can't run.
 function runSemgrep(cwd, targets) {
+  // Render installs Semgrep in a project-local virtual environment so it is
+  // available at runtime without modifying the service's system Python.
+  const localSemgrep = path.join(__dirname, '..', '.venv', 'bin', 'semgrep');
+  const semgrepCommand = fs.existsSync(localSemgrep) ? localSemgrep : 'semgrep';
   return new Promise((resolve) => {
     execFile(
-      'semgrep',
+      semgrepCommand,
       ['--config', 'auto', '--json', '--no-git-ignore', '--quiet', ...targets],
       { cwd, maxBuffer: 1024 * 1024 * 10, timeout: SEMGREP_TIMEOUT_MS },
       (error, stdout) => {
