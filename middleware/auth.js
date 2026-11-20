@@ -17,6 +17,18 @@ async function requireGithubUser(req, res, next) {
   }
 }
 
+// Optional visitor authentication for features that can run without a GitHub
+// account but should still attach results to the account when one is present.
+async function optionalGithubUser(req, res, next) {
+  try {
+    const auth = await resolveGithubAuth(req, res);
+    if (auth) req.ghUser = auth;
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+}
+
 // --- admins -------------------------------------------------------------------
 
 const ADMIN_COOKIE_OPTS = { sameSite: 'strict' };
@@ -73,4 +85,4 @@ function requireAdmin({ stages = ['active'], roles = null } = {}) {
   };
 }
 
-module.exports = { requireGithubUser, loadAdminSession, requireAdmin, setAdminCookie, clearAdminCookie };
+module.exports = { requireGithubUser, optionalGithubUser, loadAdminSession, requireAdmin, setAdminCookie, clearAdminCookie };

@@ -196,7 +196,7 @@ The dashboard proxies `/api` to the server, so the browser only talks to one add
 
 ### Each user: connect an account
 
-Open the dashboard and click **Connect GitHub**. When configured, choose **Continue with GitHub** to authorize or sign back in. Use **Install or manage repository access** to choose which repositories the app can access. Its short-lived user token is encrypted and refreshed automatically. Personal access token connection remains available as a fallback. Reviews are linked to the connected account and visible only to that account.
+Open the dashboard and click **Connect GitHub**. When configured, choose **Continue with GitHub** to authorize or sign back in. Use **Install or manage repository access** to choose which repositories the app can access. Its short-lived user token is encrypted and refreshed automatically. Personal access token connection remains available as a fallback. Reviews created while signed in are linked to that account and visible only to that account.
 
 To configure GitHub App sign-in, enable **Request user authorization (OAuth) during installation**, set the callback URL to `GITHUB_APP_CALLBACK_URL`, subscribe to **Pull request** events, and grant repository **Contents: Read and write** and **Pull requests: Read and write**. Configure the App's webhook URL and secret, then set `GITHUB_APP_SLUG`, `GITHUB_APP_CLIENT_ID`, and `GITHUB_APP_CLIENT_SECRET` on the server. Install the GitHub App on each repository you want reviewed; you do not need to add a separate webhook to every repository.
 
@@ -206,7 +206,7 @@ For local webhook testing, create a channel at [smee.io](https://smee.io), put i
 
 **Dashboard.** Shows your reviews with repository, PR number, score and finding counts. Select a repository in the sidebar to filter. Open a review to see the diff and each finding with its severity, category, explanation and suggested fix.
 
-**Quick Check.** Paste code or upload files and folders. Limits: 50 files, 150 KB per file, 300 KB in total; binary files and credential-looking files (`.env`, keys) are skipped. After a review you can create a branch and open a PR containing the code.
+**Quick Check.** Paste code or upload files and folders without signing in to GitHub. Limits: 50 files, 150 KB per file, 300 KB in total; binary files and credential-looking files (`.env`, keys) are skipped. Signed-in users have reviews saved to their account history and can create a branch and open a PR containing the code. Guest results are temporary in the current page and are not saved.
 
 **Sharing your local dashboard.** With VS Code, forward port `5173` from the Ports panel and send the link. Only that one port is needed.
 

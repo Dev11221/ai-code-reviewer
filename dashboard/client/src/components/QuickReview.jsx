@@ -226,7 +226,7 @@ export default function QuickReview({ onOpenReview }) {
 
       {!connected && (
         <div className="adm-notice adm-notice-info" role="status">
-          Connect your GitHub account to run reviews (your results are private to you).{' '}
+          You can run a temporary Quick Check without GitHub sign-in. Connect GitHub if you want reviews saved to your history or want to create a PR.{' '}
           <button className="adm-link" onClick={connect}>Connect GitHub</button>
         </div>
       )}
@@ -242,7 +242,7 @@ export default function QuickReview({ onOpenReview }) {
               {uploaded.length > 0 && <span className="tab-count">{uploaded.length}</span>}
             </button>
           </div>
-          <button className="btn-primary" onClick={runReview} disabled={running || !canRun || !connected}>
+          <button className="btn-primary" onClick={runReview} disabled={running || !canRun}>
             {running ? <Loader2 size={15} className="spin" /> : <Play size={15} />}
             {running ? `Reviewing… ${elapsed}s` : 'Run review'}
           </button>
@@ -373,19 +373,27 @@ export default function QuickReview({ onOpenReview }) {
             </div>
           )}
 
+          {!result.saved && (
+            <div className="notice" role="status">
+              This result is temporary and wasn’t added to review history. Connect GitHub and run it again to save it or create a PR.
+            </div>
+          )}
+
           <div className="quick-review-footer">
-            <button className="btn-ghost-sm" onClick={() => onOpenReview(result.reviewId)}>
-              View as full review
-            </button>
-            {connected ? (
+            {result.reviewId && (
+              <button className="btn-ghost-sm" onClick={() => onOpenReview(result.reviewId)}>
+                View as full review
+              </button>
+            )}
+            {result.reviewId && connected ? (
               <button className="btn-primary" onClick={() => setShowPrForm((s) => !s)}>
                 <Github size={15} /> {showPrForm ? 'Hide' : 'Push to GitHub / Create PR'}
               </button>
-            ) : (
+            ) : result.reviewId ? (
               <button className="btn-primary" onClick={connect} title="Connect GitHub to push this code as a PR">
                 <Github size={15} /> Connect GitHub to create a PR
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       )}

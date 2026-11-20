@@ -10,7 +10,7 @@ const { normalizeFindings } = require('../../findings/validate');
 const { createReviewWithFindings, getReviewForUser } = require('../../findings/db');
 const { reviewEvents } = require('../../lib/events');
 const { forgetUser } = require('../../lib/session');
-const { requireGithubUser } = require('../../middleware/auth');
+const { requireGithubUser, optionalGithubUser } = require('../../middleware/auth');
 const limits = require('../../middleware/rateLimits');
 const { validate, idParam } = require('../../middleware/validate');
 const { HttpError, wrap } = require('../../middleware/errors');
@@ -71,7 +71,7 @@ async function reviewBatch(batch) {
 // POST /api/quick-review
 // Body: either { code, fileName }  (pasted code)
 //       or     { files: [{ path, content }, ...] }  (uploaded files / a folder)
-router.post('/quick-review', requireGithubUser, limits.quickReview(), validate({ body: reviewBody }), wrap(async (req, res) => {
+router.post('/quick-review', optionalGithubUser, limits.quickReview(), validate({ body: reviewBody }), wrap(async (req, res) => {
   const { code, fileName, files } = req.body;
 
   let inputFiles;
@@ -123,24 +123,29 @@ router.post('/quick-review', requireGithubUser, limits.quickReview(), validate({
   }
 
   const overallScore = Q.computeUploadScore(inputFiles, findings);
-  const reviewId = await createReviewWithFindings(
-    {
-      sourceType: 'quick_check',
-      fileName: Q.labelForFiles(inputFiles),
-      diffText: Q.buildSyntheticDiff(inputFiles),
-      sourceCode: isPaste ? inputFiles[0].content : null,
-      sourceFiles: isPaste ? null : inputFiles,
-      overallScore,
-      ownerUserId: req.ghUser.userId,
-    },
-    findings
-  );
+  let reviewId = null;
+  if (req.ghUser) {
+    reviewId = await createReviewWithFindings(
+      {
+        sourceType: 'quick_check',
+        fileName: Q.labelForFiles(inputFiles),
+        diffText: Q.buildSyntheticDiff(inputFiles),
+        sourceCode: isPaste ? inputFiles[0].content : null,
+        sourceFiles: isPaste ? null : inputFiles,
+        overallScore,
+        ownerUserId: req.ghUser.userId,
+      },
+      findings
+    );
 
-  reviewEvents.emit('change', { type: 'review-created', reviewId, ownerUserId: req.ghUser.userId });
-  console.log(`[quick-review] saved review #${reviewId} (${findings.length} finding(s), ${((Date.now() - startedAt) / 1000).toFixed(1)}s)`);
+    reviewEvents.emit('change', { type: 'review-created', reviewId, ownerUserId: req.ghUser.userId });
+    console.log(`[quick-review] saved review #${reviewId} (${findings.length} finding(s), ${((Date.now() - startedAt) / 1000).toFixed(1)}s)`);
+  } else {
+    console.log(`[quick-review] temporary guest result (${findings.length} finding(s), ${((Date.now() - startedAt) / 1000).toFixed(1)}s)`);
+  }
 
   res.json({
-    reviewId, findings, overallScore, fileCount: inputFiles.length,
+    reviewId, saved: Boolean(reviewId), findings, overallScore, fileCount: inputFiles.length,
     files: inputFiles.map((f) => f.path), skipped, warnings,
   });
 }));
