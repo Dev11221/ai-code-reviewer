@@ -13,6 +13,7 @@ export default function PRDetail({ reviewId, onBack }) {
   const [severity, setSeverity] = useState('all');
   const [query, setQuery] = useState('');
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [feedbackBusy, setFeedbackBusy] = useState(null);
   const reviewPane = useRef(null);
   const reviewContent = useRef(null);
 
@@ -149,6 +150,19 @@ export default function PRDetail({ reviewId, onBack }) {
                   </div>
                   <p className="issue">{finding.issue}</p>
                   <p className="suggestion">{finding.suggestion}</p>
+                  {(finding.evidence || finding.context_files?.length > 0) && <div className="finding-evidence">
+                    <strong>Evidence</strong>{finding.evidence && <p>{finding.evidence}</p>}
+                    {finding.context_files?.length > 0 && <small>Repository context: {finding.context_files.join(', ')}</small>}
+                  </div>}
+                  <div className="finding-feedback">
+                    <span>{finding.source || 'gemini'} · {Math.round((finding.confidence ?? 0.6) * 100)}% confidence</span>
+                    <div>{[['useful', 'Useful'], ['incorrect', 'Incorrect'], ['duplicate', 'Duplicate']].map(([key, label]) => <button key={key} type="button" disabled={feedbackBusy === finding.id} className={finding.feedback === key ? 'is-selected' : ''} onClick={async () => {
+                      setFeedbackBusy(finding.id);
+                      try { const result = await api.sendFindingFeedback(reviewId, finding.id, key); setFindings((old) => old.map((f) => f.id === finding.id ? { ...f, feedback: result.feedback } : f)); }
+                      catch (err) { setError(err.response?.data?.error || 'Could not save feedback'); }
+                      finally { setFeedbackBusy(null); }
+                    }}>{label}</button>)}</div>
+                  </div>
                 </div>
               ))}
             </div>

@@ -2,7 +2,7 @@
 const crypto = require('crypto');
 const { z } = require('zod');
 const { getConfig } = require('../config/env');
-const { fetchDiff } = require('../fetch-prepare/diff-fetcher');
+const { fetchDiff, fetchRepositoryContext } = require('../fetch-prepare/diff-fetcher');
 const { analyzeDiff } = require('../review-engine/llm-analyzer');
 const { runStaticAnalysis } = require('../review-engine/static-analyzer');
 const { mergeFindings, computeOverallScore } = require('../review-engine/merge-findings');
@@ -11,6 +11,7 @@ const { postComment } = require('../delivery/github-comments');
 const { createReviewWithFindings } = require('../findings/db');
 const { reviewEvents } = require('../lib/events');
 const { getTokenForRepo } = require('../lib/session');
+const { retrieveContext } = require('../review-engine/repository-context');
 
 // ---------------------------------------------------------------------------
 // Authenticity: every delivery must carry GitHub's HMAC-SHA256 signature of the exact
@@ -163,7 +164,12 @@ async function processReview({ owner, repo, pullNumber }) {
   let llmFindings;
   try {
     const t2 = Date.now();
-    llmFindings = await analyzeDiff(diff, staticFindings);
+    // A PR diff does not include the whole checkout. Retrieve repository context
+    // from the files present in the patch and their project guidance where available.
+    const changedPaths = [...diff.matchAll(/^diff --git a\/(.+?) b\/(.+)$/gm)].map((m) => m[2]);
+    const repositoryFiles = await fetchRepositoryContext(owner, repo, pullNumber, token, changedPaths);
+    const context = retrieveContext(repositoryFiles, diff);
+    llmFindings = await analyzeDiff(diff, staticFindings, context);
     console.log(`Gemini review complete. (${((Date.now() - t2) / 1000).toFixed(1)}s)`);
   } catch (err) {
     console.error('FAILED at analyzeDiff:', err.message);

@@ -49,6 +49,7 @@ function createApp() {
   api.use(require('./dashboard/api/repo-view'));
   api.use(require('./dashboard/api/pr-drilldown'));
   api.use(require('./dashboard/api/analytics'));
+  api.use(require('./dashboard/api/evaluation'));
   api.use(require('./dashboard/api/events'));
   api.use(require('./dashboard/api/quick-review'));
   api.use('/admin', require('./admin/routes'));

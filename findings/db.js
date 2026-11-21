@@ -26,9 +26,9 @@ async function createReviewWithFindings(review, findings = []) {
     const reviewId = rows[0].id;
     for (const f of findings) {
       await client.query(
-        `INSERT INTO findings (review_id, file_path, severity, category, issue, suggestion)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-        [reviewId, f.filePath, f.severity, f.category, f.issue, f.suggestion]
+        `INSERT INTO findings (review_id, file_path, severity, category, issue, suggestion, source, confidence, evidence, context_files)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [reviewId, f.filePath, f.severity, f.category, f.issue, f.suggestion, f.source || 'gemini', f.confidence ?? 0.6, f.evidence || '', JSON.stringify(f.contextFiles || [])]
       );
     }
     await client.query('COMMIT');
@@ -69,6 +69,24 @@ async function getFindingsByReview(reviewId) {
   return rows;
 }
 
+async function setFindingFeedback(findingId, reviewId, userId, feedback) {
+  const { rows } = await pool.query(
+    `UPDATE findings f SET feedback = $4
+      FROM reviews r WHERE f.id = $1 AND f.review_id = $2 AND r.id = f.review_id AND r.owner_user_id = $3
+      RETURNING f.id, f.feedback`, [findingId, reviewId, userId, feedback]
+  );
+  return rows[0] || null;
+}
+
+async function getFeedbackSummary(userId) {
+  const { rows } = await pool.query(
+    `SELECT f.source, f.feedback, COUNT(*)::int AS count FROM findings f
+       JOIN reviews r ON r.id = f.review_id WHERE r.owner_user_id = $1 AND f.feedback IS NOT NULL
+       GROUP BY f.source, f.feedback ORDER BY f.source, f.feedback`, [userId]
+  );
+  return rows;
+}
+
 async function getFindingCountsBySeverity(userId) {
   const { rows } = await pool.query(
     `SELECT f.severity, COUNT(*)::int AS count
@@ -85,5 +103,7 @@ module.exports = {
   getReviewsForUser,
   getReviewForUser,
   getFindingsByReview,
+  setFindingFeedback,
+  getFeedbackSummary,
   getFindingCountsBySeverity,
 };

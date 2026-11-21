@@ -11,7 +11,7 @@ const pool = require('../database/connection');
 //
 // Databases created by the previous runner (no schema_migrations table yet) are
 // "baselined": migrations 001-006 are recorded as already applied.
-const BASELINE_THROUGH = '006';
+const BASELINE_THROUGH = '007';
 const dir = path.join(__dirname, '..', 'database', 'migrations');
 
 const checksum = (sql) => crypto.createHash('sha256').update(sql).digest('hex');

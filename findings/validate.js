@@ -27,6 +27,10 @@ function normalizeFindings(raw) {
       category: CATEGORIES.includes(item.category) ? item.category : 'maintainability',
       issue,
       suggestion: clean(item.suggestion, LIMITS.suggestion),
+      source: ['semgrep', 'gemini'].includes(item.source) ? item.source : 'gemini',
+      confidence: Math.max(0, Math.min(1, typeof item.confidence === 'number' && Number.isFinite(item.confidence) ? item.confidence : 0.6)),
+      evidence: clean(item.evidence, 2000),
+      contextFiles: Array.isArray(item.contextFiles) ? item.contextFiles.map((p) => clean(p, LIMITS.filePath)).filter(Boolean).slice(0, 5) : [],
     });
     if (out.length >= MAX_FINDINGS) break;
   }

@@ -3,6 +3,12 @@ import { client, resetCsrf } from './http.js';
 export const api = {
   getReviews: () => client.get('/reviews').then((r) => r.data),
   getReview: (id) => client.get(`/reviews/${id}/findings`).then((r) => r.data),
+  sendFindingFeedback: (reviewId, findingId, feedback) => client.post(`/reviews/${reviewId}/findings/${findingId}/feedback`, { feedback }).then((r) => r.data),
+  getFeedbackSummary: () => client.get('/analytics/feedback').then((r) => r.data),
+  getEvaluationCases: () => client.get('/evaluation/cases').then((r) => r.data),
+  createEvaluationCase: (payload) => client.post('/evaluation/cases', payload).then((r) => r.data),
+  runEvaluationCase: (id) => client.post(`/evaluation/cases/${id}/run`).then((r) => r.data),
+  getEvaluationRuns: () => client.get('/evaluation/runs').then((r) => r.data),
   getSeverityCounts: () => client.get('/analytics/severity').then((r) => r.data),
 
   getGithubStatus: () => client.get('/github/status').then((r) => r.data),

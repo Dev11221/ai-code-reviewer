@@ -12,6 +12,7 @@ import {
   Code2,
   BarChart3,
   Github,
+  FlaskConical,
 } from 'lucide-react';
 import { useGithub } from '../context/GithubContext.jsx';
 // The charting library is only downloaded once someone is connected and has data to chart.
@@ -24,6 +25,7 @@ export default function Sidebar({ collapsed, onToggle, route, onNavigate, active
   const navItems = [
     { key: 'dashboard', label: 'Dashboard', icon: LayoutGrid, path: '/' },
     { key: 'review', label: 'Quick Check', icon: Code2, path: '/review' },
+    { key: 'evaluation', label: 'Evaluation Lab', icon: FlaskConical, path: '/evaluation' },
   ];
 
   return (
