@@ -848,22 +848,6 @@ td {
   margin: 4px 0 0;
 }
 
-.finding-evidence { margin-top: 10px; padding: 10px 12px; border-left: 2px solid var(--accent); background: var(--panel-2); border-radius: 0 8px 8px 0; font-size: 12px; }
-.finding-evidence p { margin: 4px 0; color: var(--muted); }
-.finding-evidence small { color: var(--muted); }
-.finding-feedback { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; color: var(--muted); font-size: 11px; }
-.finding-feedback > div { display: flex; gap: 5px; }
-.finding-feedback button { border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; }
-.finding-feedback button.is-selected { border-color: var(--accent); color: var(--accent); }
-.evaluation-lab { max-width: 1000px; margin: 0 auto; padding: 24px; }
-.evaluation-lab header p, .evaluation-lab .muted { color: var(--muted); }
-.evaluation-form { display: grid; gap: 12px; padding: 18px; margin: 20px 0; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); }
-.evaluation-form label { display: grid; gap: 6px; color: var(--muted); font-size: 12px; }
-.evaluation-form input, .evaluation-form textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--bg-soft); color: var(--text); font: 12px 'JetBrains Mono', monospace; }
-.evaluation-form button, .evaluation-row button { justify-self: start; border: 1px solid var(--border); border-radius: 7px; padding: 8px 12px; color: var(--text); background: var(--panel-2); cursor: pointer; }
-.evaluation-row { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 12px; }
-.evaluation-row strong { color: var(--text); margin-right: auto; }
-
 .severity-pill {
   display: inline-block;
   padding: 2px 9px;

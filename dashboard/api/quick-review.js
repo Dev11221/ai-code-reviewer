@@ -15,7 +15,6 @@ const limits = require('../../middleware/rateLimits');
 const { validate, idParam } = require('../../middleware/validate');
 const { HttpError, wrap } = require('../../middleware/errors');
 const Q = require('../../utils/quick-files');
-const { retrieveContext } = require('../../review-engine/repository-context');
 
 // How many batches go to the AI at the same time. Low on purpose: Gemini's free
 // tier rate-limits quickly, and withRetry() already handles brief 503s.
@@ -46,7 +45,7 @@ const createPrBody = z.strictObject({
 // Reviews one batch of files: static analysis first, then the AI.
 // Never throws - a failure is reported back so the user isn't told
 // "no issues found" when the AI never actually looked at the code.
-async function reviewBatch(batch, allFiles = batch) {
+async function reviewBatch(batch) {
   const diff = Q.buildSyntheticDiff(batch);
 
   let staticFindings = [];
@@ -59,8 +58,7 @@ async function reviewBatch(batch, allFiles = batch) {
   let llmFindings = [];
   let aiFailed = false;
   try {
-    const context = retrieveContext(allFiles, diff);
-    const out = await analyzeDiff(diff, staticFindings, context);
+    const out = await analyzeDiff(diff, staticFindings);
     llmFindings = Array.isArray(out) ? out : [];
   } catch (err) {
     aiFailed = true;
@@ -102,7 +100,7 @@ router.post('/quick-review', optionalGithubUser, limits.quickReview(), validate(
   console.log(`[quick-review] ${inputFiles.length} file(s) in ${batches.length} batch(es)`);
   const startedAt = Date.now();
 
-  const results = await Q.mapWithConcurrency(batches, AI_CONCURRENCY, (batch) => reviewBatch(batch, inputFiles));
+  const results = await Q.mapWithConcurrency(batches, AI_CONCURRENCY, reviewBatch);
 
   const findings = normalizeFindings(Q.canonicalizeFindings(inputFiles, results.flatMap((r) => r.findings)));
   const failedBatches = results.filter((r) => r.aiFailed);

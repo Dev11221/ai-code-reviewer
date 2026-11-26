@@ -4,7 +4,6 @@ import Topbar from './components/Topbar.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import PRDetail from './components/PRDetail.jsx';
 import QuickReview from './components/QuickReview.jsx';
-import EvaluationLab from './components/EvaluationLab.jsx';
 import ConnectModal from './components/ConnectModal.jsx';
 import { useRoute } from './utils/router.js';
 import { useLive } from './context/LiveContext.jsx';
@@ -63,7 +62,6 @@ export default function App() {
           )}
           {!isAdmin && reviewId && <PRDetail reviewId={reviewId} onBack={closeReview} />}
           {!isAdmin && !reviewId && path === '/review' && <QuickReview onOpenReview={openReview} />}
-          {!isAdmin && !reviewId && path === '/evaluation' && <EvaluationLab />}
           {!isAdmin && !reviewId && path !== '/review' && (
             <Dashboard
               onSelectReview={openReview}

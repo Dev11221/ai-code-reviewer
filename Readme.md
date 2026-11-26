@@ -25,9 +25,6 @@ Automated pull-request review for GitHub. When a PR is opened or updated, the se
 **Reviews**
 - Automatic review of every pull request (`opened` and `synchronize` events) with a comment posted back to the PR.
 - **Two-layer analysis:** Semgrep finds known security and correctness issues; Gemini adds readability, structure, performance and error-handling feedback, without repeating what Semgrep already reported.
-- **Repository-aware context:** Quick Check and GitHub PR review retrieve relevant nearby files and repository guidance, supplying a bounded context set to Gemini. Secret-like paths and generated/vendor directories are excluded.
-- **Finding evidence and feedback:** Findings show analyzer source, heuristic confidence, evidence and cited repository files. Users can label findings useful, incorrect or duplicate.
-- **Evaluation Lab:** Add labeled code examples, run the reviewer, and track precision, recall, F1 and latency over time.
 - Findings are classified by **severity** (`blocking`, `warning`, `nitpick`) and **category** (`security`, `performance`, `maintainability`, `readability`), and every review gets a 0-100 quality score.
 - **Quick Check:** paste code, or upload files and whole folders, and get the same review without opening a PR. Optionally push the reviewed code to a new branch and open a PR from the dashboard.
 
@@ -61,9 +58,9 @@ flowchart LR
 
 1. GitHub sends a signed `pull_request` webhook. The server verifies the HMAC signature before doing anything else.
 2. The server looks up a connected user whose GitHub token can access the repository, and fetches the PR diff with it.
-3. Semgrep analyses the changed code. The app retrieves a limited set of nearby files and repository guidance from the PR head revision; sensitive paths and generated/vendor directories are excluded.
-4. Retrieved context and static findings are passed to Gemini. Findings from both sources are merged, validated against a strict schema, scored (100 minus penalties of 15 per blocking, 7 per warning, 2 per nitpick), and saved in one database transaction.
-5. The review is posted as a PR comment and pushed to the owner's open dashboards. Users can inspect evidence and context references and label findings.
+3. Semgrep analyses the changed code; its findings are passed to Gemini as context.
+4. Findings from both sources are merged, validated against a strict schema, scored (100 minus penalties of 15 per blocking, 7 per warning, 2 per nitpick), and saved in one database transaction.
+5. The review is posted as a PR comment and pushed to the owner's open dashboards.
 
 ## Tech stack
 
@@ -99,8 +96,6 @@ flowchart LR
 ├── lib/                       Crypto, passwords, TOTP, cookies, CSRF, sessions, events
 ├── middleware/                Security headers, rate limits, auth, validation, errors
 ├── review-engine/             Semgrep and Gemini analysis, merging and scoring
-│   ├── repository-context.js  Bounded lexical retrieval for repository-aware review
-├── evaluation/                Labeled-case evaluation and precision/recall/F1 metrics
 ├── scripts/                   migrate.js and admin-cli.js
 ├── tests/                     Unit and integration tests
 ├── trigger/                   Webhook handler
@@ -209,9 +204,7 @@ For local webhook testing, create a channel at [smee.io](https://smee.io), put i
 
 ## Using the app
 
-**Dashboard.** Shows your reviews with repository, PR number, score and finding counts. Select a repository in the sidebar to filter. Open a review to see each finding's analyzer source, heuristic confidence, evidence, repository context references and feedback controls.
-
-**Evaluation Lab.** Open Evaluation Lab from the sidebar while signed in. Add cases with code files and expected findings, run the reviewer, and inspect precision, recall, F1 and latency. Keep the test set fixed when comparing versions and manually verify matches because issue wording can vary. Model outputs are nondeterministic, so repeat runs before drawing conclusions.
+**Dashboard.** Shows your reviews with repository, PR number, score and finding counts. Select a repository in the sidebar to filter. Open a review to see the diff and each finding with its severity, category, explanation and suggested fix.
 
 **Quick Check.** Paste code or upload files and folders without signing in to GitHub. Limits: 50 files, 150 KB per file, 300 KB in total; binary files and credential-looking files (`.env`, keys) are skipped. Signed-in users have reviews saved to their account history and can create a branch and open a PR containing the code. Guest results are temporary in the current page and are not saved.
 
@@ -261,8 +254,6 @@ All routes are under `/api` and return JSON. State-changing requests require a C
 |---|---|
 | Session | `GET /github/status`, `POST /auth/github/token`, `POST /auth/logout` |
 | Reviews (own) | `GET /reviews`, `GET /reviews/:id/findings`, `GET /analytics/severity`, `GET /events` (live updates), `GET /github/repos` |
-| Finding feedback | `POST /reviews/:id/findings/:findingId/feedback`, `GET /analytics/feedback` |
-| Evaluation | `GET/POST /evaluation/cases`, `POST /evaluation/cases/:id/run`, `GET /evaluation/runs` |
 | Quick Check | `POST /quick-review`, `POST /quick-review/:id/create-pr` |
 | Admin sign-in | `POST /admin/auth/login`, `.../mfa/setup`, `.../mfa/enable`, `.../mfa/verify`, `.../password/initial`, `.../logout`, `GET /admin/auth/session` |
 | Admin account | `GET /admin/me`, `PATCH /admin/me`, `POST /admin/me/password`, `POST /admin/me/recovery-codes` |
@@ -276,7 +267,6 @@ All routes are under `/api` and return JSON. State-changing requests require a C
 |---|---|
 | `reviews` | One row per PR review or Quick Check; owned by a GitHub user |
 | `findings` | Individual issues belonging to a review |
-| `evaluation_cases`, `evaluation_runs` | Owner-scoped labeled examples and benchmark results |
 | `github_users` | Connected GitHub accounts (token stored encrypted) |
 | `user_sessions` | Visitor sessions (only a hash of the cookie is stored) |
 | `admin_users`, `admin_sessions`, `admin_recovery_codes` | Admin accounts, sessions and MFA recovery codes |

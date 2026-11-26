@@ -20,9 +20,6 @@ Use this guide to prepare the presentation and report. The four study sections a
 - **Semgrep** checks changed code against static rules for recognizable security and correctness patterns. It does not need an AI model to identify a rule match.
 - **Gemini** reviews the diff for additional logic and code-quality concerns, such as edge cases, error handling, readability, and maintainability. It is an external service and can be rate-limited or temporarily unavailable.
 - The app validates and combines findings from both layers. For pull requests, its score is calculated from finding severity; it is not a score returned by Gemini.
-- Repository-aware retrieval selects bounded nearby files and guidance documents from the PR head revision or Quick Check upload. It is lexical retrieval, not a hosted vector database.
-- Findings include analyzer source, evidence, cited repository paths and model-reported confidence. Confidence is a heuristic, not a calibrated probability. Users can label findings useful, incorrect or duplicate.
-- Evaluation Lab stores owner-scoped labeled examples and review runs, then reports precision, recall, F1 and latency. Metrics depend on the examples and matching method; manually review matches and report dataset size and model variance.
 
 **Core technology:** React and Vite for the dashboard; Node.js and Express for the server/API; PostgreSQL (hosted on Neon in the current deployment); Semgrep CLI; Gemini API; GitHub App webhooks and user authorization; Render hosting.
 
@@ -67,22 +64,17 @@ Use this guide to prepare the presentation and report. The four study sections a
 
 **How this project uses them:** Semgrep scans changed code against rules. Its findings are passed as context to Gemini so the model can focus on additional issues instead of repeating static findings. The prompt treats code in the diff as untrusted input. Gemini is asked for a structured JSON array; the server validates and normalizes that output before saving it. For PR reviews, severity penalties contribute to a score (blocking: 15, warning: 7, nitpick: 2, with the score floored at zero). When Gemini is unavailable, Semgrep may still provide findings; the app reports that AI analysis did not complete rather than implying it did.
 
-Repository retrieval now supplies project files and guidance alongside static findings. The dashboard exposes source, evidence, context paths, heuristic confidence, and finding feedback. Evaluation Lab measures labeled cases with precision, recall, F1 and latency; review these metrics manually and state the sample size.
-
-**Code to read:** `review-engine/static-analyzer.js`, `review-engine/llm-analyzer.js`, `review-engine/repository-context.js`, `review-engine/merge-findings.js`, `evaluation/runner.js`, `findings/validate.js`, and `utils/retry.js`.
+**Code to read:** `review-engine/static-analyzer.js`, `review-engine/llm-analyzer.js`, `review-engine/merge-findings.js`, `findings/validate.js`, and `utils/retry.js`.
 
 **Be ready to explain:**
 
 - Why use two analysis methods instead of only Gemini?
 - What does Semgrep catch well, and what does it not prove?
 - Why validate AI output instead of trusting it directly?
-- How does retrieval select repository context and which files are excluded?
-- What does the confidence value mean, and why is it not an accuracy measurement?
-- How are precision, recall and F1 calculated for the labeled cases?
 - What does a Gemini 429 or 504 mean? What can still be saved if Gemini fails?
 - Why is the score a heuristic rather than a guarantee of code quality?
 
-**Short explanation to practice:** “Semgrep supplies rule-based checks, repository retrieval supplies project context, and Gemini adds contextual feedback. Users inspect evidence and rate findings; labeled examples let us measure precision, recall and F1.”
+**Short explanation to practice:** “Semgrep supplies rule-based checks, and Gemini adds contextual feedback. We validate and combine the results; if the AI service fails, we distinguish that from a clean AI review.”
 
 ### Member 3 — Dashboard and user experience
 
@@ -100,7 +92,7 @@ Repository retrieval now supplies project files and guidance alongside static fi
 - How do search and repository filters help users find reviews?
 - What design choices make the review details easier to scan?
 
-**Short explanation to practice:** “The dashboard supports review and evaluation: inspect evidence and context, give finding feedback, run Quick Check, and evaluate the reviewer on labeled examples.”
+**Short explanation to practice:** “The dashboard turns the analysis into a usable review workflow: users can find a review, inspect its diff and findings, or run Quick Check on code that is not yet in a PR.”
 
 ### Member 4 — Backend, database, security, and deployment
 
@@ -126,7 +118,7 @@ Keep slides visual and concise. Use speaker notes for the details from the membe
 
 ### Slide 1 — AI Code Reviewer
 
-**Subtitle:** Repository-aware, measurable feedback for GitHub pull requests and standalone code
+**Subtitle:** AI-assisted feedback for GitHub pull requests and standalone code  
 Add the four team members’ names, course/team, and date.
 
 ### Slide 2 — The problem
@@ -140,21 +132,18 @@ Add the four team members’ names, course/team, and date.
 
 - Review PRs automatically when they are opened or updated.
 - Run Quick Check on pasted code or uploaded files.
-- Combine Semgrep, repository-context retrieval and Gemini feedback.
-- Capture user feedback and evaluate with labeled examples.
+- Combine Semgrep rule checks with Gemini feedback.
 - Show findings in a dashboard and PR comments.
 
 ### Slide 4 — How a PR review works
 
 Use a flow graphic:  
-**PR event → signed webhook → diff + repository context retrieval → Semgrep + Gemini → evidence-backed findings → database → dashboard + PR comment**
+**PR event → signed webhook → diff retrieval → Semgrep + Gemini → validated findings → database → dashboard + PR comment**
 
 ### Slide 5 — Main features
 
 - GitHub App sign-in and repository installation
 - Severity-labelled findings and review score
-- Repository context, evidence and feedback labels
-- Evaluation Lab with precision, recall, F1 and latency
 - Searchable dashboard, review details, charts
 - Quick Check for code outside a PR
 - Admin console for account/database operations
@@ -178,8 +167,7 @@ Demonstrate one path: connect GitHub → choose Quick Check or open a PR → ins
 
 - External AI quotas and service timeouts can interrupt Gemini analysis.
 - Semgrep can still provide static findings when Gemini is unavailable.
-- Limitations: lexical retrieval can miss semantically related files; confidence is not calibrated; benchmark scores depend on labeled examples and matching method.
-- Next steps: expand and independently label the evaluation set, compare retrieval/no-retrieval runs, calibrate confidence, and add team-level reporting.
+- Next steps: improve retry/queue handling, test with a larger sample of repositories, and add team-level reporting.
 - Close with: **“The tool helps developers find and understand potential issues earlier; human review remains important.”**
 
 ## 4. Report-writing ideas

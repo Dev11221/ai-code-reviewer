@@ -81,7 +81,6 @@ function toFinding(r, originalName) {
     category: 'security',
     issue: extra.message || 'Issue detected by static analysis.',
     suggestion: autofix ? `Suggested fix: ${autofix}` : `Learn more: ${ruleLink}`,
-    source: 'semgrep', confidence: 0.9, evidence: extra.lines || '', contextFiles: [],
   };
 }
 
